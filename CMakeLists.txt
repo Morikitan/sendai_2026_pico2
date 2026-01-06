@@ -33,26 +33,8 @@ project(sendai_2026_pico2 C CXX ASM)
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
-# Add executable. Default name is the project name, version 0.1
+add_subdirectory(lib)
+add_subdirectory(main)
 
-add_executable(sendai_2026_pico2 sendai_2026_pico2.cpp )
-
-pico_set_program_name(sendai_2026_pico2 "sendai_2026_pico2")
-pico_set_program_version(sendai_2026_pico2 "0.1")
-
-# Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(sendai_2026_pico2 0)
-pico_enable_stdio_usb(sendai_2026_pico2 1)
-
-# Add the standard library to the build
-target_link_libraries(sendai_2026_pico2
-        pico_stdlib)
-
-# Add the standard include files to the build
-target_include_directories(sendai_2026_pico2 PRIVATE
-        ${CMAKE_CURRENT_LIST_DIR}
-)
-
-pico_add_extra_outputs(sendai_2026_pico2)
 
 #  #define PICO_RP2350A 1 は大丈夫ですか？
