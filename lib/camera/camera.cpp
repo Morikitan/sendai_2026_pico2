@@ -17,3 +17,7 @@ void CameraSetup(){
     gpio_set_function(camera_TX_pin, GPIO_FUNC_UART);  // TXピン
     gpio_set_function(camera_RX_pin, GPIO_FUNC_UART);  // RXピン
 }
+
+void UseCamera(){
+    
+}
