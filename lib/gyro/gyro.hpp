@@ -4,7 +4,8 @@
 extern "C" {
 #endif
 
-void LineSetup();
+void GyroSetup();
+void UseGyroSensor();
 
 #ifdef __cplusplus
 }

@@ -4,7 +4,7 @@
 extern "C" {
 #endif
 
-void LineSetup();
+void EncorderSetup();
 
 #ifdef __cplusplus
 }
