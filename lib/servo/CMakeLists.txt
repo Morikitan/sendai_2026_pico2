@@ -2,7 +2,7 @@ add_library(servo servo.cpp)
 
 target_include_directories(servo PRIVATE ../display)
 
-target_link_libraries(servo pico_stdlib)
+target_link_libraries(servo pico_stdlib hardware_pwm)
 
 #display.hppの中のu8g2ライブラリを有効にする
 target_include_directories(servo PRIVATE

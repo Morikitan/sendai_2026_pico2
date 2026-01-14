@@ -4,7 +4,7 @@
 extern "C" {
 #endif
 
-void EncorderSetup();
+void EncoderSetup();
 
 #ifdef __cplusplus
 }
