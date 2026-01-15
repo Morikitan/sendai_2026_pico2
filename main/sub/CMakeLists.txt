@@ -12,7 +12,7 @@ target_include_directories(main_sub PRIVATE ../../lib)
 # Add the standard include files to the build
 target_include_directories(main_sub PRIVATE ${CMAKE_CURRENT_LIST_DIR})
 
-target_link_libraries(main_sub pico_stdlib hardware_i2c)
+target_link_libraries(main_sub pico_stdlib hardware_i2c hardware_pwm hardware_gpio hardware_uart)
 
 target_include_directories(main_sub PRIVATE ../../lib/display/u8g2/csrc)
 
