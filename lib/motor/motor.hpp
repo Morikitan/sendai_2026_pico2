@@ -4,7 +4,8 @@
 extern "C" {
 #endif
 
-void SterpperSetup();
+void StepperSetup();
+void unnamed(unsigned int slice_num,unsigned int gpio, float freq_hz);
 
 #ifdef __cplusplus
 }

@@ -2,7 +2,7 @@ add_library(motor motor.cpp)
 
 target_include_directories(motor PRIVATE ../display)
 
-target_link_libraries(motor pico_stdlib)
+target_link_libraries(motor pico_stdlib hardware_pwm)
 
 #display.hppの中のu8g2ライブラリを有効にする
 target_include_directories(motor PRIVATE
