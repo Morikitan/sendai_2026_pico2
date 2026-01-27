@@ -5,6 +5,7 @@ extern "C" {
 #endif
 
 void LineSetup();
+void UseLineSensor();
 
 #ifdef __cplusplus
 }

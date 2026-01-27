@@ -42,7 +42,7 @@ void StepperSetup(){
     gpio_put(stepper_right_direction_pin, 0);
 }
 
-void unnamed(unsigned int slice_num,unsigned int gpio, float freq_hz){
+void SetStepperSpeed(unsigned int slice_num,unsigned int gpio, float freq_hz){
     const uint wrap = 10000;                // 解像度
     float clkdiv = 150000000 / (freq_hz * wrap);
     if (clkdiv < 1.0f) clkdiv = 1.0f;

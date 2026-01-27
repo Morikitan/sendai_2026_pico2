@@ -13,6 +13,7 @@ target_include_directories(main_line PRIVATE ../../lib)
 target_include_directories(main_line PRIVATE ${CMAKE_CURRENT_LIST_DIR})
 
 target_link_libraries(main_line pico_stdlib hardware_i2c)
+target_link_libraries(main_line line main_to_line)
 
 target_include_directories(main_line PRIVATE ../../lib/display/u8g2/csrc)
 

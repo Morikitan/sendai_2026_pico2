@@ -6,6 +6,9 @@ extern "C" {
 
 void ServoSetup();
 void SetServoAngle(unsigned int gpio,int angle);
+void DownArm();
+void UpArm();
+void CatchBall();
 
 #ifdef __cplusplus
 }

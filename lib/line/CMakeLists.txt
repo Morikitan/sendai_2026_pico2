@@ -2,7 +2,7 @@ add_library(line line.cpp)
 
 target_include_directories(line PRIVATE ../display)
 
-target_link_libraries(line pico_stdlib)
+target_link_libraries(line pico_stdlib hardware_gpio)
 
 #display.hppの中のu8g2ライブラリを有効にする
 target_include_directories(line PRIVATE

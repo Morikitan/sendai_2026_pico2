@@ -34,6 +34,7 @@ extern float AngleX;
 
 //line
 extern bool circleLineSensor[20];
+extern bool frontLineSensor[3];
 #define main_to_line_TX_pin 14 //メインマイコン
 #define main_to_line_RX_pin 15 //メインマイコン
 #define line_to_main_TX_pin 12 //ラインマイコン
