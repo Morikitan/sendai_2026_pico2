@@ -112,6 +112,10 @@ extern unsigned short int distance; //mm単位
 #define current_sensor_left_pin 26  //サブマイコン
 #define current_sensor_right_pin 27  //サブマイコン
 #define current_sensor_DC_pin 28 //サブマイコン
+#define color_sensor_i2c i2c0
+#define color_sensor_SDA_pin 16
+#define color_sensor_SCL_pin 17
+#define color_sensor_LED_pin 13
 
 //others
 #define buzzer_pin 22 //メインマイコン
