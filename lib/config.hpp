@@ -39,29 +39,29 @@ extern bool frontLineSensor[3];
 #define main_to_line_RX_pin 15 //メインマイコン
 #define line_to_main_TX_pin 12 //ラインマイコン
 #define line_to_main_RX_pin 13 //ラインマイコン
-#define circle_line_sensor_pin1 0 //ラインマイコン
-#define circle_line_sensor_pin2 1 //ラインマイコン
-#define circle_line_sensor_pin3 2 //ラインマイコン
-#define circle_line_sensor_pin4 3 //ラインマイコン
-#define circle_line_sensor_pin5 4 //ラインマイコン
-#define circle_line_sensor_pin6 5 //ラインマイコン
-#define circle_line_sensor_pin7 6 //ラインマイコン
-#define circle_line_sensor_pin8 7 //ラインマイコン
-#define circle_line_sensor_pin9 8 //ラインマイコン
-#define circle_line_sensor_pin10 9 //ラインマイコン
-#define circle_line_sensor_pin11 10 //ラインマイコン
-#define circle_line_sensor_pin12 11 //ラインマイコン
-#define circle_line_sensor_pin13 14 //ラインマイコン
-#define circle_line_sensor_pin14 15 //ラインマイコン
-#define circle_line_sensor_pin15 16 //ラインマイコン
-#define circle_line_sensor_pin16 17 //ラインマイコン
-#define circle_line_sensor_pin17 18 //ラインマイコン
-#define circle_line_sensor_pin18 19 //ラインマイコン
-#define circle_line_sensor_pin19 20 //ラインマイコン
-#define circle_line_sensor_pin20 21 //ラインマイコン
-#define front_line_sensor_pinA 22 //ラインマイコン
-#define front_line_sensor_pinB 26 //ラインマイコン
-#define front_line_sensor_pinC 27 //ラインマイコン
+#define circle_line_sensor_pin1 16 //ラインマイコン
+#define circle_line_sensor_pin2 17 //ラインマイコン
+#define circle_line_sensor_pin3 18 //ラインマイコン
+#define circle_line_sensor_pin4 19 //ラインマイコン
+#define circle_line_sensor_pin5 20 //ラインマイコン
+#define circle_line_sensor_pin6 21 //ラインマイコン
+#define circle_line_sensor_pin7 22 //ラインマイコン
+#define circle_line_sensor_pin8 26 //ラインマイコン
+#define circle_line_sensor_pin9 27 //ラインマイコン
+#define circle_line_sensor_pin10 28 //ラインマイコン
+#define circle_line_sensor_pin11 0 //ラインマイコン
+#define circle_line_sensor_pin12 1 //ラインマイコン
+#define circle_line_sensor_pin13 5 //ラインマイコン
+#define circle_line_sensor_pin14 6 //ラインマイコン
+#define circle_line_sensor_pin15 7 //ラインマイコン
+#define circle_line_sensor_pin16 8 //ラインマイコン
+#define circle_line_sensor_pin17 9 //ラインマイコン
+#define circle_line_sensor_pin18 10 //ラインマイコン
+#define circle_line_sensor_pin19 11 //ラインマイコン
+#define circle_line_sensor_pin20 14 //ラインマイコン
+#define front_line_sensor_pinA 2 //ラインマイコン
+#define front_line_sensor_pinB 3 //ラインマイコン
+#define front_line_sensor_pinC 4 //ラインマイコン
 
 //motor (ステッパー)
 #define stepper_reset_pin 6 //メインマイコン
@@ -80,9 +80,11 @@ extern bool frontLineSensor[3];
 #define tactile_switch_pin3 21 //メインマイコン
 
 //tof
+#define tof_i2c i2c0 //
 #define tof_SDA_pin 16 //サブマイコン
 #define tof_SCL_pin 17 //サブマイコン
 #define tof_reset_pin 20 //サブマイコン
+extern unsigned short int distance; //mm単位
 
 //touch sensor
 #define touch_sensor_front_left_pin 27 //メインマイコン

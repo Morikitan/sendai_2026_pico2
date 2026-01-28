@@ -1,6 +1,5 @@
 add_subdirectory(camera)
 add_subdirectory(display)
-add_subdirectory(encoder)
 add_subdirectory(gyro)
 add_subdirectory(line)
 add_subdirectory(main_to_line)

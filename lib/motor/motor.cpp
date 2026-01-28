@@ -28,7 +28,7 @@ void StepperSetup(){
     gpio_set_dir(stepper_reset_pin,GPIO_OUT);
     gpio_set_dir(stepper_sleep_pin,GPIO_OUT);
 
-    //a
+    //sliceの設定
     stepper_left_slice_num = pwm_gpio_to_slice_num(stepper_left_clock_pin);
     stepper_right_slice_num = pwm_gpio_to_slice_num(stepper_right_clock_pin);
 
@@ -42,7 +42,10 @@ void StepperSetup(){
     gpio_put(stepper_right_direction_pin, 0);
 }
 
-void SetStepperSpeed(unsigned int slice_num,unsigned int gpio, float freq_hz){
+// slice_num : stepper_left_slice_numかstepper_right_slice_num
+// gpio : stepper_left_clock_pinかstepper_right_clock_pin
+// freq_hz : よくわからない 500がmaxらしい
+void SetStepperSpeed(unsigned int slice_num, unsigned int gpio, float freq_hz){
     const uint wrap = 10000;                // 解像度
     float clkdiv = 150000000 / (freq_hz * wrap);
     if (clkdiv < 1.0f) clkdiv = 1.0f;
@@ -52,4 +55,30 @@ void SetStepperSpeed(unsigned int slice_num,unsigned int gpio, float freq_hz){
     pwm_set_wrap(slice_num, wrap);
     pwm_set_chan_level(slice_num, pwm_gpio_to_channel(gpio), wrap / 2);
     pwm_set_enabled(gpio, true);
+}
+
+//speed1 : 左ステッパーのスピード
+//speed2 : 右ステッパーのスピード
+void MainMotorState(int speed1,int speed2){
+    if(speed1 > 0){
+        SetStepperSpeed(stepper_left_slice_num,stepper_left_clock_pin,speed1);
+        gpio_put(stepper_left_direction_pin, 0);
+    }else if(speed1 == 0){
+        SetStepperSpeed(stepper_left_slice_num,stepper_left_clock_pin,0);
+        gpio_put(stepper_left_direction_pin, 0);
+    }else{
+        SetStepperSpeed(stepper_left_slice_num,stepper_left_clock_pin,abs(speed1));
+        gpio_put(stepper_left_direction_pin, 1);
+    }
+
+    if(speed2 > 0){
+        SetStepperSpeed(stepper_right_slice_num,stepper_right_clock_pin,speed2);
+        gpio_put(stepper_right_direction_pin, 0);
+    }else if(speed2 == 0){
+        SetStepperSpeed(stepper_right_slice_num,stepper_right_clock_pin,0);
+        gpio_put(stepper_right_direction_pin, 0);
+    }else{
+        SetStepperSpeed(stepper_right_slice_num,stepper_right_clock_pin,abs(speed2));
+        gpio_put(stepper_right_direction_pin, 1);
+    }
 }

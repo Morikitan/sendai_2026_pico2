@@ -27,6 +27,18 @@ void MainToLineSetup(){
     picoPioUartTx_program_init(pio, sm_tx, offset2, main_to_line_TX_pin, SERIAL_BAUD);
 }
 
+void LineToMainSetup(){
+    pio = pio0;
+
+    sm_rx = 0;
+    offset = pio_add_program(pio, &picoPioUartRx_program);
+    picoPioUartRx_program_init(pio, sm_rx, offset, main_to_line_RX_pin, SERIAL_BAUD);
+
+    sm_tx = 1;
+    offset2 = pio_add_program(pio, &picoPioUartTx_program);
+    picoPioUartTx_program_init(pio, sm_tx, offset2, main_to_line_TX_pin, SERIAL_BAUD);
+}
+
 void PutDataFromLineToMain(){
     uint8_t data1 = 0x00;
     for(int i = 0;i < 8;i++){
@@ -58,22 +70,73 @@ void PutDataFromLineToMain(){
         }
     }
     picoPioUartTx_program_putc(data3,true);
-}
-
-void LineToMainSetup(){
-    pio = pio0;
-
-    sm_rx = 0;
-    offset = pio_add_program(pio, &picoPioUartRx_program);
-    picoPioUartRx_program_init(pio, sm_rx, offset, main_to_line_RX_pin, SERIAL_BAUD);
-
-    sm_tx = 1;
-    offset2 = pio_add_program(pio, &picoPioUartTx_program);
-    picoPioUartTx_program_init(pio, sm_tx, offset2, main_to_line_TX_pin, SERIAL_BAUD);
+    
+    uint8_t callBack = picoPioUartRx_program_getc(true,&parity_check);
+    if(callBack == 0x12 && parity_check == true){
+        //成功
+        return;
+    }else if(callBack == 0x24 || parity_check == false){
+        //失敗
+        PutDataFromLineToMain();
+    }
 }
 
 void GetDataFromLineToMain(){
+    uint8_t data1 = picoPioUartRx_program_getc(true,&parity_check);
+    if(parity_check == false){
+        picoPioUartTx_program_putc(0x24,true);
+        GetDataFromLineToMain();
+        return;
+    }
+    for(int i = 0;i < 8;i++){
+        if((data1 << i & 0x01) == 0x01){
+            //ビットを1なら反応している
+            circleLineSensor[i] = true;
+        }else{
+            circleLineSensor[i] = false;
+        }
+    }
     
+    uint8_t data2 = picoPioUartRx_program_getc(true,&parity_check);
+    if(parity_check == false){
+        picoPioUartTx_program_putc(0x24,true);
+        GetDataFromLineToMain();
+        return;
+    }
+    for(int i = 0;i < 8;i++){
+        if((data2 << i & 0x01) == 0x01){
+            //ビットを1なら反応している
+            circleLineSensor[i+8] = true;
+        }else{
+            circleLineSensor[i+8] = false;
+        }
+    }
+
+    uint8_t data3 = picoPioUartRx_program_getc(true,&parity_check);
+    if(parity_check == false){
+        picoPioUartTx_program_putc(0x24,true);
+        GetDataFromLineToMain();
+        return;
+    }
+    for(int i = 0;i < 4;i++){
+        if((data3 << i & 0x01) == 0x01){
+            //ビットを1なら反応している
+            circleLineSensor[i+16] = true;
+        }else{
+            circleLineSensor[i+16] = false;
+        }
+    }
+    for(int i = 0;i < 3;i++){
+        if((data3 << (i+4) & 0x01) == 0x01){
+            //ビットを1なら反応している
+            frontLineSensor[i] = true;
+        }else{
+            frontLineSensor[i] = false;
+        }
+    }
+
+    //データを受け取り終わったら返信する
+    picoPioUartTx_program_putc(0x12,true);
 }
 
 //UART(シリアル通信)で送信する関数
