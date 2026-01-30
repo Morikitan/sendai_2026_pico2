@@ -5,6 +5,7 @@ extern "C" {
 #endif
 
 void ColorLEDSetup();
+void UseColorSensor();
 void CurrentSensorSetup();
 void UseCurrentSensor(unsigned int input);
 

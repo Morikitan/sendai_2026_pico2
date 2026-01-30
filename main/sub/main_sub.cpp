@@ -1,3 +1,4 @@
+#include "gyro/gyro.hpp"
 #include "servo/servo.hpp"
 #include "config.hpp"
 #include "hardware/gpio.h"
@@ -7,8 +8,10 @@
 
 int main(){
     stdio_init_all();
+    GyroSetup();
     ServoSetup();
     while(true){
+        UseGyroSensor();
         CatchBall();
     }
 }

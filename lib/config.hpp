@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include "pico/stdlib.h"
 
 //重要な変数・配列
 extern std::string SerialWatch;
@@ -31,6 +32,7 @@ extern int DisplayMode;
 #define gyro_SCL_pin 19 //サブマイコン
 #define gyro_reset_pin 22 //サブマイコン
 extern float AngleX;
+extern unsigned char gyroBuffer[2];
 
 //line
 extern bool circleLineSensor[20];
@@ -105,6 +107,7 @@ extern unsigned short int distance; //mm単位
 #define main_to_sub_uart uart0
 #define main_to_sub_TX_pin 12 //メインマイコン
 #define main_to_sub_RX_pin 13 //メインマイコン
+#define sub_to_main_uart uart0
 #define sub_to_main_TX_pin 1 //サブマイコン
 #define sub_to_main_RX_pin 0 //サブマイコン
 
@@ -113,9 +116,10 @@ extern unsigned short int distance; //mm単位
 #define current_sensor_right_pin 27  //サブマイコン
 #define current_sensor_DC_pin 28 //サブマイコン
 #define color_sensor_i2c i2c0
-#define color_sensor_SDA_pin 16
-#define color_sensor_SCL_pin 17
-#define color_sensor_LED_pin 13
+#define color_sensor_SDA_pin 16 //サブマイコン
+#define color_sensor_SCL_pin 17 //サブマイコン
+#define color_sensor_LED_pin 13 //サブマイコン
+extern uint8_t color;
 
 //others
 #define buzzer_pin 22 //メインマイコン

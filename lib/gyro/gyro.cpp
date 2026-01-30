@@ -8,6 +8,7 @@
 #include <stdio.h>
 
 float AngleX;
+unsigned char gyroBuffer[2];
 
 #define BNO_ADDRESS 0x28
 
@@ -43,7 +44,7 @@ void GyroSetup(){
 }
 
 void UseGyroSensor(){
-    uint8_t buffer[2];
+    
     bool isBreak = false;
     float i2cTime = time_us_32() / 1000000.0;
     while(i2c_get_write_available(gyro_i2c) == false){
@@ -71,8 +72,8 @@ void UseGyroSensor(){
                 printf("ジャイロ死亡\n");
             }
         }else{
-            i2c_read_blocking(gyro_i2c, BNO_ADDRESS, buffer, 2, false); 
-            AngleX = ((buffer[1] << 8) | buffer[0]) / 16.0;
+            i2c_read_blocking(gyro_i2c, BNO_ADDRESS, gyroBuffer, 2, false); 
+            AngleX = ((gyroBuffer[1] << 8) | gyroBuffer[0]) / 16.0;
             if(SerialWatch == "gyr"){
                 if(isUseDisplay){
                     DrawCircleOnDisplay(5,20,20);
