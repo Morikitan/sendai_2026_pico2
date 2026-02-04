@@ -45,7 +45,7 @@ void SubCallBack(){
             uart_putc(sub_to_main_uart,(uint8_t)distance);
             break;
         case 0x03:
-            
+            //colorの取得
             break;
         default:
             break;

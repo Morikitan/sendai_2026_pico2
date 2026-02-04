@@ -98,10 +98,10 @@ extern unsigned short int distance; //mm単位
 #define servo_left_basket_pin 2 //サブマイコン
 #define servo_sentor_basket_pin 4 //サブマイコン
 #define servo_right_basket_pin 6 //サブマイコン
-#define servo_left_claw_pin 8 //サブマイコン
-#define servo_right_claw_pin 10 //サブマイコン
+#define servo_left_claw_pin 8 //サブマイコン 0°で閉じる
+#define servo_right_claw_pin 10 //サブマイコン 180°で閉じる
 #define servo_arm_left_and_right_pin 12 //サブマイコン
-#define servo_arm_up_and_down_pin 14 //サブマイコン
+#define servo_arm_up_and_down_pin 14 //サブマイコン 165°付近で一番下
 
 //sub
 #define main_to_sub_uart uart0

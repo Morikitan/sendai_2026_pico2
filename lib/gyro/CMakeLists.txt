@@ -4,6 +4,7 @@ target_include_directories(gyro PRIVATE ../display)
 target_include_directories(gyro PRIVATE ../others)
 
 target_link_libraries(gyro pico_stdlib hardware_i2c hardware_gpio)
+target_link_libraries(gyro display others)
 
 #display.hppの中のu8g2ライブラリを有効にする
 target_include_directories(gyro PRIVATE
