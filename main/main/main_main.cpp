@@ -5,7 +5,7 @@
 #include "u8g2.h"
 #include <stdio.h>
 
-//細木が編集できてるかの確認
+//あ
 
 int main(){
     stdio_init_all();
