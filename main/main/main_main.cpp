@@ -13,7 +13,7 @@ int main(){
     PinSetup();
     while(true){
         if(gpio_get(tactile_switch_pin1) == true){
-            MainMotorState(200,200);
+            MainMotorState(1000,1000);
         }
     }
 }

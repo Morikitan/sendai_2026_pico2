@@ -39,12 +39,12 @@ void StepperSetup(){
     gpio_put(stepper_sleep_pin,0);
     //ステッパーのモードと向きの設定
     gpio_put(stepper_left_direction_pin, 1);
-    gpio_put(stepper_right_direction_pin, 0);
+    gpio_put(stepper_right_direction_pin, 1);
 }
 
 // slice_num : stepper_left_slice_numかstepper_right_slice_num
 // gpio : stepper_left_clock_pinかstepper_right_clock_pin
-// freq_hz : よくわからない 500がmaxらしい
+// freq_hz : 速さの変数。1000くらいが適正？：検証中
 void SetStepperSpeed(unsigned int slice_num, unsigned int gpio, float freq_hz){
     const uint wrap = 10000;                // 解像度
     float clkdiv = 150000000 / (freq_hz * wrap);
@@ -54,7 +54,7 @@ void SetStepperSpeed(unsigned int slice_num, unsigned int gpio, float freq_hz){
     pwm_set_clkdiv(slice_num, clkdiv);
     pwm_set_wrap(slice_num, wrap);
     pwm_set_chan_level(slice_num, pwm_gpio_to_channel(gpio), wrap / 2);
-    pwm_set_enabled(gpio, true);
+    pwm_set_enabled(slice_num, true);
 }
 
 //speed1 : 左ステッパーのスピード
@@ -73,12 +73,12 @@ void MainMotorState(int speed1,int speed2){
 
     if(speed2 > 0){
         SetStepperSpeed(stepper_right_slice_num,stepper_right_clock_pin,speed2);
-        gpio_put(stepper_right_direction_pin, 0);
+        gpio_put(stepper_right_direction_pin, 1);
     }else if(speed2 == 0){
         SetStepperSpeed(stepper_right_slice_num,stepper_right_clock_pin,0);
-        gpio_put(stepper_right_direction_pin, 0);
+        gpio_put(stepper_right_direction_pin, 1);
     }else{
         SetStepperSpeed(stepper_right_slice_num,stepper_right_clock_pin,abs(speed2));
-        gpio_put(stepper_right_direction_pin, 1);
+        gpio_put(stepper_right_direction_pin, 0);
     }
 }
