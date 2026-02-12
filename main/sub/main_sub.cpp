@@ -20,11 +20,11 @@ int main(){
         // UseGyroSensor();
         //CatchBall();
         // SetServoAngle(servo_sentor_basket_pin,60);
-        CatchCan(true);
+        //CatchCan(true);
         sleep_ms(1000);
-        CatchCan(false);
+        // CatchCan(false);
         sleep_ms(1000);
-        ThrowCan();
+        // ThrowCan();
         sleep_ms(5000);
     }
 }
