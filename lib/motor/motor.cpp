@@ -27,24 +27,32 @@ void StepperSetup(){
     gpio_set_dir(stepper_right_direction_pin,GPIO_OUT);
     gpio_set_dir(stepper_reset_pin,GPIO_OUT);
     gpio_set_dir(stepper_sleep_pin,GPIO_OUT);
-
     //sliceの設定
     stepper_left_slice_num = pwm_gpio_to_slice_num(stepper_left_clock_pin);
     stepper_right_slice_num = pwm_gpio_to_slice_num(stepper_right_clock_pin);
-
+    //ステッパーのモード設定
+    gpio_init(10);
+    gpio_init(11);
+    gpio_init(21);
+    gpio_set_dir(10,GPIO_OUT);
+    gpio_set_dir(11,GPIO_OUT);
+    gpio_set_dir(21,GPIO_OUT);
+    gpio_put(10,1);
+    gpio_put(11,0);
+    gpio_put(21,0);
     //ステッパーのリセット
     gpio_put(stepper_reset_pin, 1);
     sleep_ms(10);
     gpio_put(stepper_reset_pin, 0);
     gpio_put(stepper_sleep_pin,0);
-    //ステッパーのモードと向きの設定
+    //ステッパーの向きの設定
     gpio_put(stepper_left_direction_pin, 1);
     gpio_put(stepper_right_direction_pin, 1);
 }
 
 // slice_num : stepper_left_slice_numかstepper_right_slice_num
 // gpio : stepper_left_clock_pinかstepper_right_clock_pin
-// freq_hz : 速さの変数。1000くらいが適正？：検証中
+// freq_hz : 速さの変数。500までは回る
 void SetStepperSpeed(unsigned int slice_num, unsigned int gpio, float freq_hz){
     const uint wrap = 10000;                // 解像度
     float clkdiv = 150000000 / (freq_hz * wrap);

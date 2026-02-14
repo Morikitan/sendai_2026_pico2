@@ -12,8 +12,8 @@ int main(){
     StepperSetup();
     PinSetup();
     while(true){
-        if(gpio_get(tactile_switch_pin1) == true){
-            MainMotorState(1000,1000);
-        }
+        //if(gpio_get(tactile_switch_pin1) == true){
+            MainMotorState(300,300);
+        //}
     }
 }
