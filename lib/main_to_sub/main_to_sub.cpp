@@ -2,6 +2,7 @@
 #include "gyro.hpp"
 #include "main_to_sub.hpp"
 #include "other_sensor.hpp"
+#include "servo.hpp"
 #include "tof.hpp"
 #include "../config.hpp"
 #include "hardware/uart.h"
@@ -41,13 +42,13 @@ void SubCallBack(){
         case 0x02:
             //distanceの取得
             UseTof();
-            uart_putc(sub_to_main_uart,(uint8_t)(distance >> 8));
-            uart_putc(sub_to_main_uart,(uint8_t)distance);
+            uart_write_blocking(sub_to_main_uart,(uint8_t[]){(uint8_t)(distance >> 8)},1);
+            uart_write_blocking(sub_to_main_uart,(uint8_t[]){(uint8_t)distance},1);
             break;
         case 0x03:
             //colorの取得
             UseColorSensor();
-            uart_putc(sub_to_main_uart,color);
+            uart_write_blocking(sub_to_main_uart,(uint8_t[]){color},1);
             break;
         case 0x04:
             //currentの取得
@@ -56,6 +57,15 @@ void SubCallBack(){
             UseCurrentSensor(2);
             uart_write_blocking(sub_to_main_uart,currentBuffer,6);
             break;
+        case 0x11:{
+            //サーボを動かす
+            while(!uart_is_readable(sub_to_main_uart));
+            uint gpio = (uint)uart_getc(sub_to_main_uart);
+            while(!uart_is_readable(sub_to_main_uart));
+            int angle = (int)uart_getc(sub_to_main_uart);
+            SetServoAngle(gpio,angle);
+            break;
+        }
         default:
             break;
         }
@@ -71,7 +81,7 @@ void SetServoAngleFromMain(unsigned int gpio,int angle){
 
 //メインマイコンがサブマイコンからAngleXを取得する関数
 void GetGyroAngleFromSub(){
-    uart_putc(main_to_sub_uart,0x01);
+    uart_write_blocking(main_to_sub_uart,(uint8_t[]){0x01},1);
     uart_read_blocking(main_to_sub_uart,gyroBuffer,2);
     AngleX = ((gyroBuffer[1] << 8) | gyroBuffer[0]) / 16.0;
 }
@@ -79,20 +89,20 @@ void GetGyroAngleFromSub(){
 //メインマイコンがサブマイコンからdistanceを取得する関数
 void GetDistanceFromSub(){
     uint8_t data[2];
-    uart_putc(main_to_sub_uart,0x02);
+    uart_write_blocking(main_to_sub_uart,(uint8_t[]){0x02},1);
     uart_read_blocking(main_to_sub_uart,data,2);
     distance = (data[0] << 8) | data[1];
 }
 
 //メインマイコンがサブマイコンからcolorを取得する関数
 void GetColorFromSub(){
-    uart_putc(main_to_sub_uart,0x03);
+    uart_write_blocking(main_to_sub_uart,(uint8_t[]){0x03},1);
     uart_read_blocking(main_to_sub_uart,&color,1);
 }
 
 //メインマイコンがサブマイコンからcurrentを取得する関数
 void GetCurrentFromSub(){
-    uart_putc(main_to_sub_uart,0x04);
+    uart_write_blocking(main_to_sub_uart,(uint8_t[]){0x04},1);
     uart_read_blocking(main_to_sub_uart,currentBuffer,6);
     for(int i = 0;i < 3;i++){
         current[i] = ((uint16_t)currentBuffer[i * 2]) << 8 | (uint16_t)currentBuffer[i * 2 + 1]; 
