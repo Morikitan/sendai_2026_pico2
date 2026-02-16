@@ -46,6 +46,15 @@ void SubCallBack(){
             break;
         case 0x03:
             //colorの取得
+            UseColorSensor();
+            uart_putc(sub_to_main_uart,color);
+            break;
+        case 0x04:
+            //currentの取得
+            UseCurrentSensor(0);
+            UseCurrentSensor(1);
+            UseCurrentSensor(2);
+            uart_write_blocking(sub_to_main_uart,currentBuffer,6);
             break;
         default:
             break;
@@ -55,9 +64,9 @@ void SubCallBack(){
 
 //サーボの角度を設定するプログラム
 //pin : ピン番号
-//angle : 整数の角度(0°～180°(GPIO8,10は160°まで?))
+//angle : 整数の角度(10°～170°(GPIO8,10は160°まで?))
 void SetServoAngleFromMain(unsigned int gpio,int angle){
-    
+    uart_write_blocking(main_to_sub_uart,(uint8_t[]){0x11,(uint8_t)gpio,(uint8_t)angle},3);
 }
 
 //メインマイコンがサブマイコンからAngleXを取得する関数
@@ -79,4 +88,13 @@ void GetDistanceFromSub(){
 void GetColorFromSub(){
     uart_putc(main_to_sub_uart,0x03);
     uart_read_blocking(main_to_sub_uart,&color,1);
+}
+
+//メインマイコンがサブマイコンからcurrentを取得する関数
+void GetCurrentFromSub(){
+    uart_putc(main_to_sub_uart,0x04);
+    uart_read_blocking(main_to_sub_uart,currentBuffer,6);
+    for(int i = 0;i < 3;i++){
+        current[i] = ((uint16_t)currentBuffer[i * 2]) << 8 | (uint16_t)currentBuffer[i * 2 + 1]; 
+    }
 }

@@ -120,6 +120,8 @@ extern unsigned short int distance; //mm単位
 #define color_sensor_SCL_pin 17 //サブマイコン
 #define color_sensor_LED_pin 13 //サブマイコン
 extern uint8_t color;
+extern uint16_t current[3];
+extern uint8_t currentBuffer[6];
 
 //others
 #define buzzer_pin 22 //メインマイコン

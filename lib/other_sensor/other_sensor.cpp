@@ -7,6 +7,8 @@
 #include <stdio.h>
 
 uint8_t color;
+uint16_t current[3];
+uint8_t currentBuffer[6];
 
 void ColorLEDSetup(){
     gpio_init(color_sensor_LED_pin);
@@ -34,5 +36,7 @@ void CurrentSensorSetup(){
 //        DC    : 2 
 void UseCurrentSensor(unsigned int input){
     adc_select_input(input);
-    uint16_t result = adc_read();
+    current[input] = adc_read();
+    currentBuffer[input * 2] = (uint8_t)(current[input] >> 8);
+    currentBuffer[input * 2 + 1] = (uint8_t)current[input];
 }
