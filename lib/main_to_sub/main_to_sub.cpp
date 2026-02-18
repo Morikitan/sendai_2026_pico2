@@ -1,6 +1,7 @@
 #include "display.hpp"
 #include "gyro.hpp"
 #include "main_to_sub.hpp"
+#include "motor.hpp"
 #include "other_sensor.hpp"
 #include "servo.hpp"
 #include "tof.hpp"
@@ -66,17 +67,29 @@ void SubCallBack(){
             SetServoAngle(gpio,angle);
             break;
         }
+        case 0x12:{
+            //吸引DCを制御する
+            while(!uart_is_readable(sub_to_main_uart));
+            uint duty = (uint)uart_getc(sub_to_main_uart);
+            SetSuctionMotorSpeed(duty);
+            break;
+        }
         default:
             break;
         }
     }
 }
 
-//サーボの角度を設定するプログラム
+//サーボの角度を設定する関数
 //pin : ピン番号
 //angle : 整数の角度(10°～170°(GPIO8,10は160°まで?))
 void SetServoAngleFromMain(unsigned int gpio,int angle){
     uart_write_blocking(main_to_sub_uart,(uint8_t[]){0x11,(uint8_t)gpio,(uint8_t)angle},3);
+}
+
+//吸引のモーターのスピードを制御する関数
+void SetSuctionMotorFromMain(int duty){
+   uart_write_blocking(main_to_sub_uart,(uint8_t[]){0x12,(uint8_t)duty},2);
 }
 
 //メインマイコンがサブマイコンからAngleXを取得する関数
