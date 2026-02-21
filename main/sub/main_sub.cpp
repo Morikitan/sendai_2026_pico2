@@ -16,19 +16,16 @@
 int main(){
     stdio_init_all();
     CurrentSensorSetup();
+    SuctionSetup();
     // GyroSetup();
     //ServoSetup();
     //sleep_ms(1000);
-    gpio_init(motor_suction_pin);
-    gpio_set_dir(motor_suction_pin,GPIO_OUT);
-    gpio_put(motor_suction_pin,1);
+    SetSuctionMotorSpeed(250);
     while(true){
-        gpio_put(motor_suction_pin,1);
-        sleep_ms(5);
-        gpio_put(motor_suction_pin,0);
-        sleep_ms(15);
         adc_select_input(2);
-        printf("%u\n",adc_read());
+        int adc = adc_read();
+        printf("%d\n",adc);
+        sleep_ms(10);
         // UseGyroSensor();
         //CatchBall();
         // SetServoAngle(servo_sentor_basket_pin,60);
