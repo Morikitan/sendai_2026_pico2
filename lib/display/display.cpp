@@ -15,10 +15,13 @@ int DisplayMode;
 void DisplaySetup(){
     // ディスプレイ初期化（I2C + ノーブランドSSD1309用）
     i2c_init(display_i2c, 400 * 1000);  // 400kHz
+    gpio_init(display_SCL_pin);
+    gpio_init(display_SDA_pin);
     gpio_set_function(display_SDA_pin, GPIO_FUNC_I2C);  // SDA
     gpio_set_function(display_SCL_pin, GPIO_FUNC_I2C);  // SCL
-    gpio_pull_up(display_SDA_pin);//ここいる？
+    gpio_pull_up(display_SDA_pin);//ここいる？ → いる
     gpio_pull_up(display_SCL_pin);
+    gpio_pull_up(display_reset_pin);
     printf("1");
     //0_fを2_fにするとピン番号の向きが反転する
     //うまくいかなかったら1306でやってみる
