@@ -90,6 +90,11 @@ void MainMotorState(int speed1,int speed2){
     }
 }
 
+void SuctionSetup(){
+    gpio_init(motor_suction_pin);
+    gpio_set_function(motor_suction_pin,GPIO_FUNC_PWM);
+}
+
 //吸引用モーター
 void SetSuctionMotor(uint duty){
     //周波数をf[Hz]とすると
