@@ -135,6 +135,32 @@ void GetDataFromLineToMain(){
         }
     }
 
+    if(serialWatch == "lin"){
+        if(isUseDisplay){
+            for(int i = 0;i < 20;i++){
+                if(circleLineSensor[i])Draw2x2BoxOnDisplay(circle20[i][0]+1,circle20[i][1]+1);
+            }
+
+        }else{
+            printf("Circle : ");
+            for(int i = 0;i < 20;i++){
+                if(circleLineSensor[i]){
+                    printf("1");
+                }else{
+                    printf("0");
+                }
+            }
+            printf(" Front : ");
+            for(int i = 0;i < 3;i++){
+                if(frontLineSensor[i]){
+                    printf("1");
+                }else{
+                    printf("0");
+                }
+            }
+            printf("\n");
+        }
+    }
     //データを受け取り終わったら返信する
     picoPioUartTx_program_putc(0x12,true);
 }

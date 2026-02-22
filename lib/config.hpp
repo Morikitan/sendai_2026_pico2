@@ -4,7 +4,18 @@
 #include "pico/stdlib.h"
 
 //重要な変数・配列
-extern std::string SerialWatch;
+/******************
+1  : hom 通常モード(modeを表示)
+2  : cam カメラの値(ボールの位置と色とか？)
+3  : col カラーセンサの値
+4  : cur 電流センサの値
+5  : gyr 機体の角度(AngleX)〇
+6  : lin ラインセンサーの値(0か1で受け取る)
+7  : tim 1回の経過時間(ミリ秒)
+8  : tof tofの値
+9  : oth その他(時によって変わる)
+*******************/
+extern std::string serialWatch;
 
 //camera
 #define camera_uart uart1
@@ -18,9 +29,10 @@ extern std::string SerialWatch;
 #define display_reset_pin 18 //メインマイコン
 
 #define isUseDisplay true
-#define DisplayBufferSize 200
-extern char DisplayBuffer[DisplayBufferSize];
-extern int DisplayMode;
+#define displayBufferSize 200
+extern char displayBuffer[displayBufferSize];
+extern int displayMode;
+extern int circle20[20][2];
 
 //encorer
 #define encoderA_pin 11 //メインマイコン
@@ -31,7 +43,7 @@ extern int DisplayMode;
 #define gyro_SDA_pin 18 //サブマイコン
 #define gyro_SCL_pin 19 //サブマイコン
 #define gyro_reset_pin 22 //サブマイコン
-extern float AngleX;
+extern float angleX;
 extern unsigned char gyroBuffer[2];
 
 //line

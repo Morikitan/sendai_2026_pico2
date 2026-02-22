@@ -10,7 +10,7 @@ uint8_t color;
 uint16_t current[3];
 uint8_t currentBuffer[6];
 
-void ColorLEDSetup(){
+void ColorSensorSetup(){
     gpio_init(color_sensor_LED_pin);
     gpio_init(color_sensor_SCL_pin);
     gpio_init(color_sensor_SDA_pin);

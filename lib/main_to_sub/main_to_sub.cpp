@@ -96,7 +96,7 @@ void SetSuctionMotorFromMain(int duty){
 void GetGyroAngleFromSub(){
     uart_write_blocking(main_to_sub_uart,(uint8_t[]){0x01},1);
     uart_read_blocking(main_to_sub_uart,gyroBuffer,2);
-    AngleX = ((gyroBuffer[1] << 8) | gyroBuffer[0]) / 16.0;
+    angleX = ((gyroBuffer[1] << 8) | gyroBuffer[0]) / 16.0;
 }
 
 //メインマイコンがサブマイコンからdistanceを取得する関数

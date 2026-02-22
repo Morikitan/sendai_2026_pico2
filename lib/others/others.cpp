@@ -25,6 +25,10 @@ void PinSetup(){
     gpio_set_dir(touch_sensor_front_right_pin,GPIO_IN);
 }
 
+void ColorLEDSetup(){
+    
+}
+
 //正面0度時計回りの度数法の角度を座標平面の弧度法(正面π/2反時計回り)に変換する。
 //定義域は 0 <= θ < 2π
 float radian(float angle){

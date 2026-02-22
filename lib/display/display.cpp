@@ -7,12 +7,33 @@
 #include <math.h>
 #include <string>
 
+std::string serialWatch;
 u8g2_t u8g2;
-float DisplayPreTime = 0;
-char DisplayBuffer[DisplayBufferSize];
-int DisplayMode;
+float displayPreTime = 0;
+char displayBuffer[displayBufferSize];
+int displayMode;
+int circle20[20][2] = {
+    {60,30},{59,39},{54,48},{48,54},{39,59},
+    {30,60},{21,59},{12,54},{6,48},{1,39},
+    {0,30},{1,21},{6,12},{12,6},{21,1},
+    {30,0},{39,1},{48,6},{54,12},{59,21},
+};
 
 void DisplaySetup(){
+    /******************
+    1  : hom 通常モード(modeを表示)
+    2  : cam カメラの値(ボールの位置と色とか？)
+    3  : col カラーセンサの値
+    4  : cur 電流センサの値
+    5  : gyr 機体の角度(AngleX)
+    6  : lin ラインセンサーの値(0か1で受け取る)
+    7  : tim 1回の経過時間(ミリ秒)
+    8  : tof tofの値
+    9  : oth その他(時によって変わる)
+    *******************/
+    serialWatch = "gyr";
+    SetDisplayMode();
+
     // ディスプレイ初期化（I2C + ノーブランドSSD1309用）
     i2c_init(display_i2c, 400 * 1000);  // 400kHz
     gpio_init(display_SCL_pin);
@@ -22,10 +43,12 @@ void DisplaySetup(){
     gpio_pull_up(display_SDA_pin);//ここいる？ → いる
     gpio_pull_up(display_SCL_pin);
     gpio_pull_up(display_reset_pin);
-    printf("1");
+
     //0_fを2_fにするとピン番号の向きが反転する
     //うまくいかなかったら1306でやってみる
-    u8g2_Setup_ssd1309_i2c_128x64_noname0_f(
+    //u8g2_Setup_ssd1309_i2c_128x64_noname0_f
+    printf("1");
+    u8g2_Setup_ssd1306_i2c_128x64_noname_f(
         &u8g2, U8G2_R0, u8x8_byte_pico_i2c, u8x8_gpio_and_delay_cb);
     printf("2");
     u8g2_SetI2CAddress(&u8g2, 0x78); // I2Cアドレス (8bit形式) ←これあってる？
@@ -35,6 +58,45 @@ void DisplaySetup(){
     u8g2_SetPowerSave(&u8g2, 0); // 電源ON
 
     u8g2_SetContrast(&u8g2, 128);  // 最大
+}
+
+//ディスプレイ上の説明欄(一番上の文字列)を生成する
+void PrintdisplayMode(){
+    if(displayMode == 1){
+        serialWatch = "hom";
+        WriteTextOnDisplay(5,15,"<Home>",12,true,true);
+    }else if(displayMode == 2){
+        serialWatch = "cam";
+        WriteTextOnDisplay(5,15,"<Camera>",12,true,false);
+    }else if(displayMode == 3){
+        serialWatch = "col";
+        WriteTextOnDisplay(5,15,"<ColorSensor>",12,true,false);
+    }else if(displayMode == 4){
+        serialWatch = "cur";
+        WriteTextOnDisplay(5,15,"<CurrentSensor>",12,true,false);
+    }else if(displayMode == 5){
+        serialWatch = "gyr";
+        WriteTextOnDisplay(5,15,"<GyroSensor>",12,true,false);
+    }else if(displayMode == 6){
+        serialWatch = "lin";
+        WriteTextOnDisplay(64,15,"<Line>",12,true,false);
+        DrawLineMapOnDisplay();
+    }else if(displayMode == 7){
+        serialWatch = "tim";
+        WriteTextOnDisplay(5,15,"<DeltaTime>",12,true,false);
+        snprintf(displayBuffer,displayBufferSize,"%fミリ秒",timer_hw->timerawl / 1000.0-displayPreTime);
+        WriteTextOnDisplay(5,30,displayBuffer,12,false,true);
+        displayPreTime = timer_hw->timerawl / 1000.0;
+    }else if(displayMode == 8){
+        serialWatch = "tof";
+        WriteTextOnDisplay(5,15,"<Tof>",12,true,false);
+    }else if(displayMode == 9){
+        serialWatch = "oth";
+        WriteTextOnDisplay(5,15,"<Others>",12,true,true);
+    }else{
+        serialWatch = "???";
+        WriteTextOnDisplay(5,15,"<error>",12,true,true);
+    }
 }
 
 // x : 左端からのx座標(0～127)
@@ -134,4 +196,77 @@ uint8_t u8x8_gpio_and_delay_cb(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void 
             break;
     }
     return 1;
+}
+
+
+//SerialWatchの値に対応したdisplayModeの値を設定する
+void SetDisplayMode(){
+    /******************
+    1  : hom 通常モード(modeを表示)
+    2  : cam カメラの値(ボールの位置と色とか？)
+    3  : col カラーセンサの値
+    4  : cur 電流センサの値
+    5  : gyr 機体の角度(AngleX)
+    6  : lin ラインセンサーの値(0か1で受け取る)
+    7  : tim 1回の経過時間(ミリ秒)
+    8  : tof tofの値
+    9  : oth その他(時によって変わる)
+    *******************/
+    if(serialWatch == "hom"){
+        displayMode = 1;
+    }else if(serialWatch == "cam"){
+        displayMode = 2;
+    }else if(serialWatch == "col"){
+        displayMode = 3;
+    }else if(serialWatch == "cur"){
+        displayMode = 4;
+    }else if(serialWatch == "gyr"){
+        displayMode = 5;
+    }else if(serialWatch == "lin"){
+        displayMode = 6;
+    }else if(serialWatch == "tim"){
+        displayMode = 7;
+    }else if(serialWatch == "tof"){
+        displayMode = 8;
+    }else if(serialWatch == "oth"){
+        displayMode = 9;
+    }
+}
+
+//ラインセンサの表示用の枠を描画する。地獄。
+void DrawLineMapOnDisplay(){
+    for(int i = 0;i < 20;i++){
+        Draw4x4CircleOnDisplay(circle20[i][0],circle20[i][1]);
+    }
+    Draw4x4CircleOnDisplay(80,22);
+    Draw4x4CircleOnDisplay(80,30);
+    Draw4x4CircleOnDisplay(80,38);
+}
+
+//□■■□
+//■□□■
+//■□□■
+//□■■□
+//上の形の円を描く関数
+// x : 円の左端のx座標
+// y : 円の上端のy座標
+void Draw4x4CircleOnDisplay(char x,char y){
+    DrawPixelOnDisplay(x+1,y);
+    DrawPixelOnDisplay(x+2,y);
+    DrawPixelOnDisplay(x,y+1);
+    DrawPixelOnDisplay(x+3,y+1);
+    DrawPixelOnDisplay(x,y+2);
+    DrawPixelOnDisplay(x+3,y+2);
+    DrawPixelOnDisplay(x+1,y+3);
+    DrawPixelOnDisplay(x+2,y+3);
+}
+
+//2x2の四角を描く関数
+// x : 円の左端のx座標
+// y : 円の上端のy座標
+void Draw2x2BoxOnDisplay(char x,char y){
+    DrawPixelOnDisplay(x,y);
+    DrawPixelOnDisplay(x,y+1);
+    DrawPixelOnDisplay(x+1,y);
+    DrawPixelOnDisplay(x+1,y+1);
 }

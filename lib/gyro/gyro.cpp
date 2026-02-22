@@ -7,7 +7,7 @@
 #include "pico/stdlib.h"
 #include <stdio.h>
 
-float AngleX;
+float angleX;
 unsigned char gyroBuffer[2];
 
 #define BNO_ADDRESS 0x28
@@ -25,11 +25,12 @@ void GyroSetup(){
             sleep_ms(1000);
         }
     }
+    //[][2]はかつてすべて80なのでおかしい時はそれにもどすことを検討
     uint8_t config[][3] = {
-        {0x3D, 0x00, 80},
-        {0x3E, 0x00, 80},
-        {0x07, 0x00, 80},
-        {0x3D, 0x08, 80}
+        {0x3D, 0x00, 50},
+        {0x07, 0x00, 10},
+        {0x3E, 0x00, 10},
+        {0x3D, 0x08, 50}
     };
     for (int i = 0; i < 4; i++) {
         uint8_t reg = config[i][0];
@@ -40,11 +41,10 @@ void GyroSetup(){
         i2c_write_blocking(gyro_i2c, BNO_ADDRESS, data, 2, false); 
         sleep_ms(delay); 
     }
-    printf("bno055は正常に起動しました。\n");
+    printf("bno055はIMUモードで正常に起動しました。\n");
 }
 
 void UseGyroSensor(){
-    
     bool isBreak = false;
     float i2cTime = time_us_32() / 1000000.0;
     while(i2c_get_write_available(gyro_i2c) == false){
@@ -73,23 +73,23 @@ void UseGyroSensor(){
             }
         }else{
             i2c_read_blocking(gyro_i2c, BNO_ADDRESS, gyroBuffer, 2, false); 
-            AngleX = ((gyroBuffer[1] << 8) | gyroBuffer[0]) / 16.0;
-            if(SerialWatch == "gyr"){
+            angleX = ((gyroBuffer[1] << 8) | gyroBuffer[0]) / 16.0;
+            if(serialWatch == "gyr"){
                 if(isUseDisplay){
                     DrawCircleOnDisplay(5,20,20);
-                    DrawLineOnDisplay(25,40,20,-radian(AngleX));
-                    WriteTextOnDisplay(60,30,"AngleX",8,false,false);
-                    snprintf(DisplayBuffer,DisplayBufferSize,"%f",AngleX);
-                    WriteTextOnDisplay(60,40,DisplayBuffer,8,false,true);
+                    DrawLineOnDisplay(25,40,20,-radian(angleX));
+                    WriteTextOnDisplay(60,30,"angleX",8,false,false);
+                    snprintf(displayBuffer,displayBufferSize,"%f",angleX);
+                    WriteTextOnDisplay(60,40,displayBuffer,8,false,true);
                 }else{
-                    printf("AngleX : %f\n",AngleX);
+                    printf("angleX : %f\n",angleX);
                 }
             }
             // if(mode == 2 || mode == 4 || mode == 8 || mode == 10){
-                // if (AngleX > 180){
-                    // AngleX -= 180;
+                // if (angleX > 180){
+                    // angleX -= 180;
                 // }else{
-                    // AngleX += 180;
+                    // angleX += 180;
                 // }
             // }
         }
