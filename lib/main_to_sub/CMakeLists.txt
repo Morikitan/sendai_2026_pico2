@@ -4,6 +4,7 @@ target_include_directories(main_to_sub PRIVATE ../display)
 target_include_directories(main_to_sub PRIVATE ../gyro)
 target_include_directories(main_to_sub PRIVATE ../motor)
 target_include_directories(main_to_sub PRIVATE ../other_sensor)
+target_include_directories(main_to_sub PRIVATE ../others)
 target_include_directories(main_to_sub PRIVATE ../servo)
 target_include_directories(main_to_sub PRIVATE ../tof)
 

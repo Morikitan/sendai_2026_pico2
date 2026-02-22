@@ -20,6 +20,7 @@ void SetDisplayMode();
 void DrawLineMapOnDisplay();
 void Draw4x4CircleOnDisplay(char x,char y);
 void Draw2x2BoxOnDisplay(char x,char y);
+void SendBufferToDisplay();
 
 #ifdef __cplusplus
 }

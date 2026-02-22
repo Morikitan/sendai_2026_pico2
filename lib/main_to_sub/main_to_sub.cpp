@@ -3,6 +3,7 @@
 #include "main_to_sub.hpp"
 #include "motor.hpp"
 #include "other_sensor.hpp"
+#include "others.hpp"
 #include "servo.hpp"
 #include "tof.hpp"
 #include "../config.hpp"
@@ -97,6 +98,17 @@ void GetGyroAngleFromSub(){
     uart_write_blocking(main_to_sub_uart,(uint8_t[]){0x01},1);
     uart_read_blocking(main_to_sub_uart,gyroBuffer,2);
     angleX = ((gyroBuffer[1] << 8) | gyroBuffer[0]) / 16.0;
+    if(serialWatch == "gyr"){
+        if(isUseDisplay){
+            DrawCircleOnDisplay(5,20,20);
+            DrawLineOnDisplay(25,40,20,-radian(angleX));
+            WriteTextOnDisplay(60,30,"angleX",8,false,false);
+            snprintf(displayBuffer,displayBufferSize,"%f",angleX);
+            WriteTextOnDisplay(60,40,displayBuffer,8,false,true);
+        }else{
+            printf("angleX : %f\n",angleX);
+        }
+    }
 }
 
 //メインマイコンがサブマイコンからdistanceを取得する関数
@@ -105,6 +117,23 @@ void GetDistanceFromSub(){
     uart_write_blocking(main_to_sub_uart,(uint8_t[]){0x02},1);
     uart_read_blocking(main_to_sub_uart,data,2);
     distance = (data[0] << 8) | data[1];
+    if(serialWatch == "tof"){
+        if(isUseDisplay){
+            if (distance == 0xFF){
+                WriteTextOnDisplay(5,30,"Measurement",8,false,false);
+                WriteTextOnDisplay(5,40,"timed out",8,false,true);
+            }else{
+                snprintf(displayBuffer,displayBufferSize,"%u mm",distance);
+                WriteTextOnDisplay(5,30,displayBuffer,8,false,true);
+            }
+        }else{
+            if (distance == 0xFF){
+                printf("Measurement timed out\n");
+            }else{
+                printf("Distance: %u mm\n", distance);
+            }
+        }
+    }
 }
 
 //メインマイコンがサブマイコンからcolorを取得する関数
@@ -119,5 +148,17 @@ void GetCurrentFromSub(){
     uart_read_blocking(main_to_sub_uart,currentBuffer,6);
     for(int i = 0;i < 3;i++){
         current[i] = ((uint16_t)currentBuffer[i * 2]) << 8 | (uint16_t)currentBuffer[i * 2 + 1]; 
+    }
+    if(serialWatch == "cur"){
+        if(isUseDisplay){
+            snprintf(displayBuffer,displayBufferSize,"left hand : %u",current[0]);
+            WriteTextOnDisplay(5,30,displayBuffer,8,false,false);
+            snprintf(displayBuffer,displayBufferSize,"right hand : %u",current[0]);
+            WriteTextOnDisplay(5,40,displayBuffer,8,false,false);
+            snprintf(displayBuffer,displayBufferSize,"DC",current[0]);
+            WriteTextOnDisplay(5,50,displayBuffer,8,false,true);
+        }else{
+            printf("left hand : %u right hand : %u DC : %u",current[0],current[1],current[2]);
+        }
     }
 }

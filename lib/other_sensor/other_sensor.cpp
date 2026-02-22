@@ -39,4 +39,7 @@ void UseCurrentSensor(unsigned int input){
     current[input] = adc_read();
     currentBuffer[input * 2] = (uint8_t)(current[input] >> 8);
     currentBuffer[input * 2 + 1] = (uint8_t)current[input];
+    if(serialWatch == "cur"){
+        printf("current%u : %u",input,current[input]);
+    }
 }

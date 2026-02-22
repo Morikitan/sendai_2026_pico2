@@ -21,15 +21,15 @@ int circle20[20][2] = {
 
 void DisplaySetup(){
     /******************
-    1  : hom 通常モード(modeを表示)
+    1  : hom 通常モード(modeを表示)〇
     2  : cam カメラの値(ボールの位置と色とか？)
     3  : col カラーセンサの値
     4  : cur 電流センサの値
-    5  : gyr 機体の角度(AngleX)
-    6  : lin ラインセンサーの値(0か1で受け取る)
-    7  : tim 1回の経過時間(ミリ秒)
-    8  : tof tofの値
-    9  : oth その他(時によって変わる)
+    5  : gyr 機体の角度(AngleX)〇
+    6  : lin ラインセンサーの値(0か1で受け取る)〇
+    7  : tim 1回の経過時間(ミリ秒)〇
+    8  : tof tofの値〇
+    9  : oth その他(時によって変わる)〇
     *******************/
     serialWatch = "gyr";
     SetDisplayMode();
@@ -269,4 +269,8 @@ void Draw2x2BoxOnDisplay(char x,char y){
     DrawPixelOnDisplay(x,y+1);
     DrawPixelOnDisplay(x+1,y);
     DrawPixelOnDisplay(x+1,y+1);
+}
+
+void SendBufferToDisplay(){
+    u8g2_SendBuffer(&u8g2);
 }

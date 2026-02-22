@@ -140,7 +140,10 @@ void GetDataFromLineToMain(){
             for(int i = 0;i < 20;i++){
                 if(circleLineSensor[i])Draw2x2BoxOnDisplay(circle20[i][0]+1,circle20[i][1]+1);
             }
-
+            if(frontLineSensor[0])Draw2x2BoxOnDisplay(81,23);
+            if(frontLineSensor[1])Draw2x2BoxOnDisplay(81,31);
+            if(frontLineSensor[2])Draw2x2BoxOnDisplay(81,39);
+            SendBufferToDisplay();
         }else{
             printf("Circle : ");
             for(int i = 0;i < 20;i++){
