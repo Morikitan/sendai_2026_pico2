@@ -140,6 +140,13 @@ void GetDistanceFromSub(){
 void GetColorFromSub(){
     uart_write_blocking(main_to_sub_uart,(uint8_t[]){0x03},1);
     uart_read_blocking(main_to_sub_uart,&color,1);
+    if(serialWatch == "cur"){
+        if(isUseDisplay){
+
+        }else{
+            
+        }
+    }
 }
 
 //メインマイコンがサブマイコンからcurrentを取得する関数

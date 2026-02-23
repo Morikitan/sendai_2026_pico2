@@ -94,7 +94,7 @@ extern bool frontLineSensor[3];
 #define tactile_switch_pin3 21 //メインマイコン
 
 //tof
-#define tof_i2c i2c0 //
+#define tof_i2c i2c0 //サブマイコン
 #define tof_SDA_pin 16 //サブマイコン
 #define tof_SCL_pin 17 //サブマイコン
 #define tof_reset_pin 20 //サブマイコン

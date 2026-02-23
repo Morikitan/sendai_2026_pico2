@@ -37,6 +37,7 @@ void LineToMainSetup(){
     sm_tx = 1;
     offset2 = pio_add_program(pio, &picoPioUartTx_program);
     picoPioUartTx_program_init(pio, sm_tx, offset2, main_to_line_TX_pin, SERIAL_BAUD);
+    //割り込みを使うことを検討したい
 }
 
 void PutDataFromLineToMain(){

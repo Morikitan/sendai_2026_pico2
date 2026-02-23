@@ -7,8 +7,9 @@
 
 int main(){
     stdio_init_all();
-
+    LineSetup();
+    LineToMainSetup();
     while(true){
-        
+        UseLineSensor();
     }
 }
