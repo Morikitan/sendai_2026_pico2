@@ -16,24 +16,26 @@
 int main(){
     stdio_init_all();
     CurrentSensorSetup();
+    ColorSensorSetup();
     SuctionSetup();
     // GyroSetup();
     //ServoSetup();
     //sleep_ms(1000);
-    SetSuctionMotorSpeed(250);
+    //SetSuctionMotorSpeed(250);
     while(true){
-        adc_select_input(2);
-        int adc = adc_read();
-        printf("%d\n",adc);
-        sleep_ms(10);
-        // UseGyroSensor();
+        //adc_select_input(2);
+        //int adc = adc_read();
+        //printf("%d\n",adc);
+        //sleep_ms(10);
+        //UseGyroSensor();
         //CatchBall();
-        // SetServoAngle(servo_sentor_basket_pin,60);
+        //SetServoAngle(servo_sentor_basket_pin,60);
         //CatchCan(true);
         //sleep_ms(1000);
-        // CatchCan(false);
+        //CatchCan(false);
         //sleep_ms(1000);
-        // ThrowCan();
+        //ThrowCan();
         //sleep_ms(5000);
+        UseColorSensor();
     }
 }

@@ -12,13 +12,35 @@ uint16_t current[3];
 uint8_t currentBuffer[6];
 
 void ColorSensorSetup(){
-    i2c_init(color_sensor_i2c, 400000);
+    i2c_init(color_sensor_i2c, 100000);
+    gpio_set_function(color_sensor_SCL_pin, GPIO_FUNC_I2C);
+    gpio_set_function(color_sensor_SDA_pin, GPIO_FUNC_I2C);
     gpio_init(color_sensor_LED_pin);
-    gpio_init(color_sensor_SCL_pin);
-    gpio_init(color_sensor_SDA_pin);
-    gpio_set_dir(color_sensor_LED_pin,GPIO_OUT);
-    gpio_set_function(color_sensor_SCL_pin,GPIO_FUNC_I2C);
-    gpio_set_function(color_sensor_SDA_pin,GPIO_FUNC_I2C);
+    gpio_set_dir(color_sensor_LED_pin, GPIO_OUT);
+
+    // 固定時間モード / Lowゲイン / 22.4ms
+    // bit7=0 bit6=0 bit3=0 bit2=0 bit1,0=10
+    write_register(REG_CONTROL, 0x02);
+    sleep_ms(50);
+}
+
+
+bool wait_data_ready(uint32_t timeout_ms){
+    absolute_time_t timeout = make_timeout_time_ms(timeout_ms);
+
+    while (!time_reached(timeout)) {
+
+        uint8_t ctrl;
+        if (!read_registers(REG_CONTROL, &ctrl, 1))
+            return false;
+
+        // bit5 を確認
+        if (ctrl & (1 << 5)) {
+            return true;  // 測定完了
+        }
+    }
+
+    return false; // タイムアウト
 }
 
 // レジスタへの書き込み
@@ -41,24 +63,26 @@ bool read_registers(uint8_t start_reg, uint8_t *dest, size_t len){
 
 
 void UseColorSensor(){
-    uint8_t data[8] = {0};
-    //8bitのデータの読み出し
-    if (!read_registers(REG_DATA_RED_H, data, sizeof(data))) {
-        printf("I2C read error\n");
-        sleep_ms(500);
+    //カラーセンサー用LEDの点灯
+    gpio_put(color_sensor_LED_pin,1);
+    //データの読み出し
+    uint8_t data[8];
+    if (!read_registers(REG_DATA_RED_H, data, 8)) {
+        printf("I2C error\n");
+        return;
     }
-    //RGB値と補正値の計算
-    uint16_t red    = (uint16_t(data[0]) << 8) | data[1];
-    uint16_t green  = (uint16_t(data[2]) << 8) | data[3];
-    uint16_t blue   = (uint16_t(data[4]) << 8) | data[5];
-    uint16_t corr   = (uint16_t(data[6]) << 8) | data[7];
-    //補正値を差し引いたRGB値の計算
-    int r = int(red)   - int(corr);
-    int g = int(green) - int(corr);
-    int b = int(blue)  - int(corr);
-    printf("Red: %d\n", r);
-    printf("Green: %d \n", g);
-    printf("Blue: %d \n", b);
+
+    uint16_t red    = (data[0] << 8) | data[1];
+    uint16_t green  = (data[2] << 8) | data[3];
+    uint16_t blue   = (data[4] << 8) | data[5];
+    uint16_t corr   = (data[6] << 8) | data[7];
+
+    int r = red   > corr ? red   - corr : 0;
+    int g = green > corr ? green - corr : 0;
+    int b = blue  > corr ? blue  - corr : 0;
+
+    printf("R:%d G:%d B:%d\n", r, g, b);
+    sleep_ms(100);
 }
 
 void CurrentSensorSetup(){
