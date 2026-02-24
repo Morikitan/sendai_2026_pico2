@@ -31,7 +31,7 @@ void DisplaySetup(){
     8  : tof tofの値〇
     9  : oth その他(時によって変わる)〇
     *******************/
-    serialWatch = "gyr";
+    serialWatch = "tim";
     SetDisplayMode();
 
     // ディスプレイ初期化（I2C + ノーブランドSSD1309用）
@@ -48,7 +48,7 @@ void DisplaySetup(){
     //うまくいかなかったら1306でやってみる
     //u8g2_Setup_ssd1309_i2c_128x64_noname0_f
     printf("1");
-    u8g2_Setup_ssd1306_i2c_128x64_noname_f(
+    u8g2_Setup_ssd1309_i2c_128x64_noname0_f(
         &u8g2, U8G2_R0, u8x8_byte_pico_i2c, u8x8_gpio_and_delay_cb);
     printf("2");
     u8g2_SetI2CAddress(&u8g2, 0x78); // I2Cアドレス (8bit形式) ←これあってる？
@@ -61,7 +61,7 @@ void DisplaySetup(){
 }
 
 //ディスプレイ上の説明欄(一番上の文字列)を生成する
-void PrintdisplayMode(){
+void PrintDisplayMode(){
     if(displayMode == 1){
         serialWatch = "hom";
         WriteTextOnDisplay(5,15,"<Home>",12,true,true);

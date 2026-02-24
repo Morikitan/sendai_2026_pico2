@@ -18,14 +18,14 @@
 extern std::string serialWatch;
 
 //camera
-#define camera_uart uart1
-#define camera_TX_pin 4 //メインマイコン
-#define camera_RX_pin 5 //メインマイコン
+#define camera_uart uart0
+#define camera_TX_pin 16 //メインマイコン
+#define camera_RX_pin 17 //メインマイコン
 
 //display
 #define display_i2c i2c0
-#define display_SDA_pin 16 //メインマイコン
-#define display_SCL_pin 17 //メインマイコン
+#define display_SDA_pin 12 //メインマイコン
+#define display_SCL_pin 13 //メインマイコン
 #define display_reset_pin 18 //メインマイコン
 
 #define isUseDisplay true
@@ -116,9 +116,9 @@ extern unsigned short int distance; //mm単位
 #define servo_arm_up_and_down_pin 14 //サブマイコン 165°付近で一番下
 
 //sub
-#define main_to_sub_uart uart0
-#define main_to_sub_TX_pin 12 //メインマイコン
-#define main_to_sub_RX_pin 13 //メインマイコン
+#define main_to_sub_uart uart1
+#define main_to_sub_TX_pin 4 //メインマイコン
+#define main_to_sub_RX_pin 5 //メインマイコン
 #define sub_to_main_uart uart0
 #define sub_to_main_TX_pin 1 //サブマイコン
 #define sub_to_main_RX_pin 0 //サブマイコン

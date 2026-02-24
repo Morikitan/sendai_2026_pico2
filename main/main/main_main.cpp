@@ -12,18 +12,17 @@
 int main(){
     stdio_init_all();
     // StepperSetup();
-    sleep_ms(3000);
     DisplaySetup();
     sleep_ms(200);
     
     // PinSetup();
 
     while(true){
-        /*WriteTextOnDisplay(10,20,"Hello World!",12,true,true);
+        // PrintDisplayMode();
+        WriteTextOnDisplay(5,15,"<DeltaTime>",12,true,true);
+        sleep_ms(1000);
         // MainMotorState(300,300);
-        printf("Hello World!\n");
-        sleep_ms(1000);*/
-        printf("Scanning...\n");
+        /*printf("Scanning...\n");
 
         for (int addr = 1; addr < 127; addr++) {
             uint8_t buf;
@@ -35,6 +34,6 @@ int main(){
         }
 
         printf("Done\n\n");
-        sleep_ms(3000);
+        sleep_ms(3000);*/
     }
 }

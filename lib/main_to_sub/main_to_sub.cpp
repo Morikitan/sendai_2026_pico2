@@ -39,6 +39,7 @@ void SubCallBack(){
         {
         case 0x01:
             //AngleXの取得
+            UseGyroSensor();
             uart_write_blocking(sub_to_main_uart,gyroBuffer,2);
             break;
         case 0x02:
