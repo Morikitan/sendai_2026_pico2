@@ -61,28 +61,43 @@ bool read_registers(uint8_t start_reg, uint8_t *dest, size_t len){
     return (ret == int(len));
 }
 
-
-void UseColorSensor(){
+//カラセンを利用した物体の判定
+//戻り値は　-1:I2Cエラー,0:その他,1:赤ボール,2:青ボール,3:缶
+int UseColorSensor(){
     //カラーセンサー用LEDの点灯
     gpio_put(color_sensor_LED_pin,1);
+    sleep_ms(10);
     //データの読み出し
     uint8_t data[8];
     if (!read_registers(REG_DATA_RED_H, data, 8)) {
         printf("I2C error\n");
-        return;
+        //エラー時はLEDを消灯
+        gpio_put(color_sensor_LED_pin,0);
+        return -1;
     }
-
     uint16_t red    = (data[0] << 8) | data[1];
     uint16_t green  = (data[2] << 8) | data[3];
     uint16_t blue   = (data[4] << 8) | data[5];
     uint16_t corr   = (data[6] << 8) | data[7];
-
+    //補正値の計算
     int r = red   > corr ? red   - corr : 0;
     int g = green > corr ? green - corr : 0;
     int b = blue  > corr ? blue  - corr : 0;
-
+    //RGB値の確認用
     printf("R:%d G:%d B:%d\n", r, g, b);
-    sleep_ms(100);
+    //objectは持っているものを表す変数　0:その他,1:赤ボール,2:青ボール,3:缶
+    int object = 0;
+    if(r > 1000){
+        object = 1;
+    }else if(b > 1000){
+        object = 2;
+    }else if(r > 200 && g > 200){
+        object = 3;
+    }
+    printf("Object:%d\n",object);
+    //LEDの消灯
+    gpio_put(color_sensor_LED_pin,0);
+    return object;
 }
 
 void CurrentSensorSetup(){
