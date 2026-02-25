@@ -96,7 +96,6 @@ int UseColorSensor(){
     }
     printf("Object:%d\n",object);
     //LEDの消灯
-    gpio_put(color_sensor_LED_pin,0);
     return object;
 }
 
