@@ -1,6 +1,7 @@
 #include "display/display.hpp"
 #include "motor/motor.hpp"
 #include "others/others.hpp"
+#include "main_to_line/main_to_line.hpp"
 #include "config.hpp"
 #include "pico/stdlib.h"
 #include "u8g2.h"
@@ -14,12 +15,13 @@ int main(){
     // StepperSetup();
     DisplaySetup();
     sleep_ms(200);
-    
+    MainToLineSetup();
     // PinSetup();
 
     while(true){
         // PrintDisplayMode();
-        WriteTextOnDisplay(5,15,"<DeltaTime>",12,true,true);
+        //WriteTextOnDisplay(5,15,"<DeltaTime>",12,true,true);
+        GetDataFromLineToMain();
         sleep_ms(1000);
         // MainMotorState(300,300);
         /*printf("Scanning...\n");
