@@ -8,11 +8,9 @@
 #include "hardware/i2c.h"
 #include <stdio.h>
 
-//あ
-
 int main(){
     stdio_init_all();
-    // StepperSetup();
+    StepperSetup();
     DisplaySetup();
     sleep_ms(200);
     MainToLineSetup();
@@ -21,9 +19,9 @@ int main(){
     while(true){
         // PrintDisplayMode();
         //WriteTextOnDisplay(5,15,"<DeltaTime>",12,true,true);
-        GetDataFromLineToMain();
+        //GetDataFromLineToMain();
         sleep_ms(1000);
-        // MainMotorState(300,300);
+        MainMotorState(100,100);
         /*printf("Scanning...\n");
 
         for (int addr = 1; addr < 127; addr++) {
