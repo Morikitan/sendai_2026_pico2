@@ -31,7 +31,7 @@ void DisplaySetup(){
     8  : tof tofの値〇
     9  : oth その他(時によって変わる)〇
     *******************/
-    serialWatch = "tim";
+    serialWatch = "lin";
     SetDisplayMode();
 
     // ディスプレイ初期化（I2C + ノーブランドSSD1309用）
@@ -84,7 +84,7 @@ void PrintDisplayMode(){
     }else if(displayMode == 7){
         serialWatch = "tim";
         WriteTextOnDisplay(5,15,"<DeltaTime>",12,true,false);
-        snprintf(displayBuffer,displayBufferSize,"%fミリ秒",timer_hw->timerawl / 1000.0-displayPreTime);
+        snprintf(displayBuffer,displayBufferSize,"%fms",timer_hw->timerawl / 1000.0-displayPreTime);
         WriteTextOnDisplay(5,30,displayBuffer,12,false,true);
         displayPreTime = timer_hw->timerawl / 1000.0;
     }else if(displayMode == 8){

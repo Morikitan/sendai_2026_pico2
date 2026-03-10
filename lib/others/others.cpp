@@ -6,6 +6,7 @@
 
 std::string SerialWatch;
 
+//メインマイコンのピン設定
 void PinSetup(){
     gpio_init(tactile_switch_pin1);
     gpio_init(tactile_switch_pin2);

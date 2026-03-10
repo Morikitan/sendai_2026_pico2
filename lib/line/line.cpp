@@ -35,4 +35,21 @@ void UseLineSensor(){
     frontLineSensor[0] = gpio_get(front_line_sensor_pinA);
     frontLineSensor[1] = gpio_get(front_line_sensor_pinB);
     frontLineSensor[2] = gpio_get(front_line_sensor_pinC);
+    printf("Circle : ");
+            for(int i = 0;i < 20;i++){
+                if(circleLineSensor[i]){
+                    printf("1");
+                }else{
+                    printf("0");
+                }
+            }
+            printf(" Front : ");
+            for(int i = 0;i < 3;i++){
+                if(frontLineSensor[i]){
+                    printf("1");
+                }else{
+                    printf("0");
+                }
+            }
+            printf("\n");
 }

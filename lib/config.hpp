@@ -73,9 +73,9 @@ extern bool frontLineSensor[3];
 #define circle_line_sensor_pin18 10 //ラインマイコン
 #define circle_line_sensor_pin19 11 //ラインマイコン
 #define circle_line_sensor_pin20 14 //ラインマイコン
-#define front_line_sensor_pinA 2 //ラインマイコン
+#define front_line_sensor_pinA 4 //ラインマイコン
 #define front_line_sensor_pinB 3 //ラインマイコン
-#define front_line_sensor_pinC 4 //ラインマイコン
+#define front_line_sensor_pinC 2 //ラインマイコン
 
 //motor (ステッパー)
 #define stepper_reset_pin 6 //メインマイコン

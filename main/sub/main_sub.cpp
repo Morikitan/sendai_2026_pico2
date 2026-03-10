@@ -37,6 +37,6 @@ int main(){
         //ThrowCan();
         //sleep_ms(5000);
         //printf("object: %d\n",UseColorSensor());
-        sleep_ms(100);
+        // sleep_ms(100);
     }
 }

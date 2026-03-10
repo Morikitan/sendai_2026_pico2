@@ -11,5 +11,7 @@ int main(){
     LineToMainSetup();
     while(true){
         UseLineSensor();
+        // PutDataFromLineToMain();
+        sleep_ms(10);
     }
 }
