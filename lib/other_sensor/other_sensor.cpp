@@ -24,6 +24,13 @@ void ColorSensorSetup(){
     sleep_ms(50);
 }
 
+void EncoderSetup(){
+    gpio_init(encoderA_pin);
+    gpio_init(encoderB_pin);
+    gpio_set_dir(encoderA_pin,GPIO_IN);
+    gpio_set_dir(encoderB_pin,GPIO_IN);
+    gpio_set_irq_enabled_with_callback(encoderA_pin,GPIO_IRQ_EDGE_FALL,true,&MainInterrupt);
+}
 
 bool wait_data_ready(uint32_t timeout_ms){
     absolute_time_t timeout = make_timeout_time_ms(timeout_ms);
@@ -117,5 +124,24 @@ void UseCurrentSensor(unsigned int input){
     currentBuffer[input * 2 + 1] = (uint8_t)current[input];
     if(serialWatch == "cur"){
         printf("current%u : %u",input,current[input]);
+    }
+}
+
+void MainInterrupt(uint gpio, uint32_t events){
+    if(gpio == encoderA_pin){
+        if (gpio_get(encoderB_pin) == true) {
+            // 時計回り
+            displayMode++;
+        } else {
+            // 反時計回り
+            displayMode--;
+        }
+
+        // ループ処理（0〜MAX_displayMode）
+        if (displayMode > 9) {
+            displayMode = 1;
+        } else if (displayMode <= 0) {
+            displayMode = 9;
+        }
     }
 }

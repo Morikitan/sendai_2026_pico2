@@ -77,10 +77,10 @@ void UseGyroSensor(){
             if(serialWatch == "gyr"){
                 if(isUseDisplay){
                     DrawCircleOnDisplay(5,20,20);
-                    DrawLineOnDisplay(25,40,20,-radian(angleX));
+                    DrawLineOnDisplay(25,40,20,radian(angleX) -1.57);
                     WriteTextOnDisplay(60,30,"angleX",8,false,false);
                     snprintf(displayBuffer,displayBufferSize,"%f",angleX);
-                    WriteTextOnDisplay(60,40,displayBuffer,8,false,true);
+                    WriteTextOnDisplay(60,40,displayBuffer,8,false,false);
                 }else{
                     printf("angleX : %f\n",angleX);
                 }

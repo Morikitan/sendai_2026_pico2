@@ -120,8 +120,8 @@ extern unsigned short int distance; //mm単位
 #define main_to_sub_TX_pin 4 //メインマイコン
 #define main_to_sub_RX_pin 5 //メインマイコン
 #define sub_to_main_uart uart0
-#define sub_to_main_TX_pin 1 //サブマイコン
-#define sub_to_main_RX_pin 0 //サブマイコン
+#define sub_to_main_TX_pin 0 //サブマイコン
+#define sub_to_main_RX_pin 1 //サブマイコン
 
 //other sensors
 #define current_sensor_left_pin 26  //サブマイコン

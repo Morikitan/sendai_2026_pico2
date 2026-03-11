@@ -1,8 +1,12 @@
 #include "display/display.hpp"
+#include "gyro/gyro.hpp"
 #include "line/line.hpp"
-#include "motor/motor.hpp"
-#include "others/others.hpp"
 #include "main_to_line/main_to_line.hpp"
+#include "main_to_sub/main_to_sub.hpp"
+#include "motor/motor.hpp"
+#include "other_sensor/other_sensor.hpp"
+#include "others/others.hpp"
+#include "tof/tof.hpp"
 #include "config.hpp"
 #include "pico/stdlib.h"
 #include "u8g2.h"
@@ -13,14 +17,18 @@ int main(){
     stdio_init_all();
     StepperSetup();
     DisplaySetup();
-    sleep_ms(2000);
     MainToLineSetup();
+    MainToSubSetup();
     PinSetup();
-
+    EncoderSetup();
+    sleep_ms(3000);
     while(true){
+        sleep_ms(100);
         PrintDisplayMode();
-        GetDataFromLineToMain();
-        if(frontLineSensor[0] == true && frontLineSensor[2] == false){
+        GetGyroAngleFromSub();
+        GetDistanceFromSub();
+        // GetDataFromLineToMain();
+        /*if(frontLineSensor[0] == true && frontLineSensor[2] == false){
             //左に曲がる
             MainMotorState(-125,250);
         }else if(frontLineSensor[0] == false && frontLineSensor[2] == true){
@@ -28,6 +36,7 @@ int main(){
             MainMotorState(250,-125);
         }else{
             MainMotorState(250,250);
-        }
+        }*/
+        SendBufferToDisplay();
     }
 }

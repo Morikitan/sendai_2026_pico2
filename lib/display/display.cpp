@@ -31,7 +31,7 @@ void DisplaySetup(){
     8  : tof tofの値〇
     9  : oth その他(時によって変わる)〇
     *******************/
-    serialWatch = "lin";
+    serialWatch = "hom";
     SetDisplayMode();
 
     // ディスプレイ初期化（I2C + ノーブランドSSD1309用）
@@ -64,7 +64,7 @@ void DisplaySetup(){
 void PrintDisplayMode(){
     if(displayMode == 1){
         serialWatch = "hom";
-        WriteTextOnDisplay(5,15,"<Home>",12,true,true);
+        WriteTextOnDisplay(5,15,"<Home>",12,true,false);
     }else if(displayMode == 2){
         serialWatch = "cam";
         WriteTextOnDisplay(5,15,"<Camera>",12,true,false);
@@ -85,17 +85,17 @@ void PrintDisplayMode(){
         serialWatch = "tim";
         WriteTextOnDisplay(5,15,"<DeltaTime>",12,true,false);
         snprintf(displayBuffer,displayBufferSize,"%fms",timer_hw->timerawl / 1000.0-displayPreTime);
-        WriteTextOnDisplay(5,30,displayBuffer,12,false,true);
+        WriteTextOnDisplay(5,30,displayBuffer,12,false,false);
         displayPreTime = timer_hw->timerawl / 1000.0;
     }else if(displayMode == 8){
         serialWatch = "tof";
         WriteTextOnDisplay(5,15,"<Tof>",12,true,false);
     }else if(displayMode == 9){
         serialWatch = "oth";
-        WriteTextOnDisplay(5,15,"<Others>",12,true,true);
+        WriteTextOnDisplay(5,15,"<Others>",12,true,false);
     }else{
         serialWatch = "???";
-        WriteTextOnDisplay(5,15,"<error>",12,true,true);
+        WriteTextOnDisplay(5,15,"<error>",12,true,false);
     }
 }
 

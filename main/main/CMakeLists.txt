@@ -14,6 +14,7 @@ target_include_directories(main_main PRIVATE ${CMAKE_CURRENT_LIST_DIR})
 
 target_link_libraries(main_main pico_stdlib hardware_i2c)
 target_link_libraries(main_main motor others display main_to_line line)
+target_link_libraries(main_main other_sensor main_to_sub gyro tof)
 
 target_include_directories(main_main PRIVATE ../../lib/display/u8g2/csrc)
 

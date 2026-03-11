@@ -164,7 +164,6 @@ void GetDataFromLineToMain(){
             if(frontLineSensor[0])Draw2x2BoxOnDisplay(81,23);
             if(frontLineSensor[1])Draw2x2BoxOnDisplay(81,31);
             if(frontLineSensor[2])Draw2x2BoxOnDisplay(81,39);
-            SendBufferToDisplay();
         }else{
             printf("Circle : ");
             for(int i = 0;i < 20;i++){

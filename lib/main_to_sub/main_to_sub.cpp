@@ -14,25 +14,26 @@
 #define BAUDRATE 115200
 
 void MainToSubSetup(){
-    gpio_init(main_to_line_RX_pin);
-    gpio_init(main_to_line_TX_pin);
-    gpio_set_function(main_to_line_RX_pin,GPIO_FUNC_UART);
-    gpio_set_function(main_to_line_TX_pin,GPIO_FUNC_UART);
+    gpio_init(main_to_sub_RX_pin);
+    gpio_init(main_to_sub_TX_pin);
+    gpio_set_function(main_to_sub_RX_pin,GPIO_FUNC_UART);
+    gpio_set_function(main_to_sub_TX_pin,GPIO_FUNC_UART);
     uart_init(main_to_sub_uart,BAUDRATE);
 }
 
 void SubToMainSetup(){
-    gpio_init(line_to_main_RX_pin);
-    gpio_init(line_to_main_TX_pin);
-    gpio_set_function(line_to_main_RX_pin,GPIO_FUNC_UART);
-    gpio_set_function(line_to_main_TX_pin,GPIO_FUNC_UART);
+    gpio_init(sub_to_main_RX_pin);
+    gpio_init(sub_to_main_TX_pin);
+    gpio_set_function(sub_to_main_RX_pin,GPIO_FUNC_UART);
+    gpio_set_function(sub_to_main_TX_pin,GPIO_FUNC_UART);
+    uart_init(sub_to_main_uart,BAUDRATE);
     uart_set_irq_enables(sub_to_main_uart,true,false);
     irq_set_exclusive_handler(UART0_IRQ,SubCallBack);
-    irq_set_enabled(UART0_IRQ,true);
-    uart_init(sub_to_main_uart,BAUDRATE);
+    irq_set_enabled(UART0_IRQ,true);   
 }
 
 void SubCallBack(){
+    printf("割り込みされた\n");
     while(uart_is_readable(sub_to_main_uart)){
         uint8_t data = (uint8_t)uart_getc(sub_to_main_uart);
         switch (data)
@@ -50,7 +51,7 @@ void SubCallBack(){
             break;
         case 0x03:
             //colorの取得
-            UseColorSensor();
+            color = UseColorSensor();
             uart_write_blocking(sub_to_main_uart,(uint8_t[]){color},1);
             break;
         case 0x04:
@@ -96,16 +97,19 @@ void SetSuctionMotorFromMain(int duty){
 
 //メインマイコンがサブマイコンからAngleXを取得する関数
 void GetGyroAngleFromSub(){
+    // printf("送信\n");
     uart_write_blocking(main_to_sub_uart,(uint8_t[]){0x01},1);
+    // printf("受信町\n");
     uart_read_blocking(main_to_sub_uart,gyroBuffer,2);
+    // printf("受信\n");
     angleX = ((gyroBuffer[1] << 8) | gyroBuffer[0]) / 16.0;
     if(serialWatch == "gyr"){
         if(isUseDisplay){
             DrawCircleOnDisplay(5,20,20);
-            DrawLineOnDisplay(25,40,20,-radian(angleX));
+            DrawLineOnDisplay(25,40,20,radian(angleX)-1.57);
             WriteTextOnDisplay(60,30,"angleX",8,false,false);
             snprintf(displayBuffer,displayBufferSize,"%f",angleX);
-            WriteTextOnDisplay(60,40,displayBuffer,8,false,true);
+            WriteTextOnDisplay(60,40,displayBuffer,8,false,false);
         }else{
             printf("angleX : %f\n",angleX);
         }
@@ -122,10 +126,10 @@ void GetDistanceFromSub(){
         if(isUseDisplay){
             if (distance == 0xFF){
                 WriteTextOnDisplay(5,30,"Measurement",8,false,false);
-                WriteTextOnDisplay(5,40,"timed out",8,false,true);
+                WriteTextOnDisplay(5,40,"timed out",8,false,false);
             }else{
                 snprintf(displayBuffer,displayBufferSize,"%u mm",distance);
-                WriteTextOnDisplay(5,30,displayBuffer,8,false,true);
+                WriteTextOnDisplay(5,30,displayBuffer,8,false,false);
             }
         }else{
             if (distance == 0xFF){
@@ -164,7 +168,7 @@ void GetCurrentFromSub(){
             snprintf(displayBuffer,displayBufferSize,"right hand : %u",current[0]);
             WriteTextOnDisplay(5,40,displayBuffer,8,false,false);
             snprintf(displayBuffer,displayBufferSize,"DC",current[0]);
-            WriteTextOnDisplay(5,50,displayBuffer,8,false,true);
+            WriteTextOnDisplay(5,50,displayBuffer,8,false,false);
         }else{
             printf("left hand : %u right hand : %u DC : %u",current[0],current[1],current[2]);
         }
