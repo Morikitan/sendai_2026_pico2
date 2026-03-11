@@ -1,4 +1,5 @@
 #include "display.hpp"
+#include "line.hpp"
 #include "main_to_line.hpp"
 #include "picoPioUart.pio.h"
 #include "../config.hpp"
@@ -32,15 +33,20 @@ void LineToMainSetup(){
 
     sm_rx = 0;
     offset = pio_add_program(pio, &picoPioUartRx_program);
-    picoPioUartRx_program_init(pio, sm_rx, offset, main_to_line_RX_pin, SERIAL_BAUD);
+    picoPioUartRx_program_init(pio, sm_rx, offset, line_to_main_RX_pin, SERIAL_BAUD);
 
     sm_tx = 1;
     offset2 = pio_add_program(pio, &picoPioUartTx_program);
-    picoPioUartTx_program_init(pio, sm_tx, offset2, main_to_line_TX_pin, SERIAL_BAUD);
+    picoPioUartTx_program_init(pio, sm_tx, offset2, line_to_main_TX_pin, SERIAL_BAUD);
     //割り込みを使うことを検討したい
 }
 
 void PutDataFromLineToMain(){
+    uint8_t predata = 0;
+    while(predata != 0x36){
+        predata = picoPioUartRx_program_getc(true,&parity_check);
+    }
+    UseLineSensor();
     uint8_t data1 = 0x00;
     for(int i = 0;i < 8;i++){
         if(circleLineSensor[i] == true){
@@ -48,6 +54,7 @@ void PutDataFromLineToMain(){
             data1 |= 0x01 << i;
         }
     }
+    printf("data1送信");
     picoPioUartTx_program_putc(data1,true);
     uint8_t data2 = 0x00;
     for(int i = 0;i < 8;i++){
@@ -56,6 +63,7 @@ void PutDataFromLineToMain(){
             data2 |= 0x01 << i;
         }
     }
+    printf("data2送信");
     picoPioUartTx_program_putc(data2,true);
     uint8_t data3 = 0x00;
     for(int i = 0;i < 4;i++){
@@ -70,57 +78,69 @@ void PutDataFromLineToMain(){
             data3 |= 0x01 << (i + 4);
         }
     }
+    printf("data3送信");
     picoPioUartTx_program_putc(data3,true);
     
     uint8_t callBack = picoPioUartRx_program_getc(true,&parity_check);
     if(callBack == 0x12 && parity_check == true){
         //成功
+        printf(" %X %X %X\n",data1,data2,data3);
         return;
     }else if(callBack == 0x24 || parity_check == false){
         //失敗
+        printf(" 送信失敗\n");
         PutDataFromLineToMain();
     }
 }
 
 void GetDataFromLineToMain(){
+    printf("データ要求");
+    picoPioUartTx_program_putc(0x36,true);
+    printf(" 受信1");
     uint8_t data1 = picoPioUartRx_program_getc(true,&parity_check);
     if(parity_check == false){
+        printf(" 受信失敗");
         picoPioUartTx_program_putc(0x24,true);
+        picoPioUartRx_program_clear_buffer();
         GetDataFromLineToMain();
         return;
     }
     for(int i = 0;i < 8;i++){
-        if((data1 << i & 0x01) == 0x01){
+        if((data1 >> i & 0x01) == 0x01){
             //ビットを1なら反応している
             circleLineSensor[i] = true;
         }else{
             circleLineSensor[i] = false;
         }
     }
-    
+    printf(" 受信2");
     uint8_t data2 = picoPioUartRx_program_getc(true,&parity_check);
     if(parity_check == false){
+        printf(" 受信失敗");
         picoPioUartTx_program_putc(0x24,true);
+        picoPioUartRx_program_clear_buffer();
         GetDataFromLineToMain();
         return;
     }
     for(int i = 0;i < 8;i++){
-        if((data2 << i & 0x01) == 0x01){
+        if((data2 >> i & 0x01) == 0x01){
             //ビットを1なら反応している
             circleLineSensor[i+8] = true;
         }else{
             circleLineSensor[i+8] = false;
         }
     }
-
+    printf(" 受信3");
     uint8_t data3 = picoPioUartRx_program_getc(true,&parity_check);
     if(parity_check == false){
+        printf(" 受信失敗");
         picoPioUartTx_program_putc(0x24,true);
+        picoPioUartRx_program_clear_buffer();
         GetDataFromLineToMain();
         return;
     }
     for(int i = 0;i < 4;i++){
-        if((data3 << i & 0x01) == 0x01){
+        if((data3 >> i & 0x01) == 0x01){
             //ビットを1なら反応している
             circleLineSensor[i+16] = true;
         }else{
@@ -128,7 +148,7 @@ void GetDataFromLineToMain(){
         }
     }
     for(int i = 0;i < 3;i++){
-        if((data3 << (i+4) & 0x01) == 0x01){
+        if((data3 >> (i+4) & 0x01) == 0x01){
             //ビットを1なら反応している
             frontLineSensor[i] = true;
         }else{
@@ -165,6 +185,7 @@ void GetDataFromLineToMain(){
             printf("\n");
         }
     }
+    printf(" %X %X %X\n",data1,data2,data3);
     //データを受け取り終わったら返信する
     picoPioUartTx_program_putc(0x12,true);
 }
@@ -225,4 +246,10 @@ unsigned char picoPioUartRx_program_getc(bool even_parity,bool* parity_check) {
 
     return (unsigned char)(c32 & 0xff);
     // }
+}
+
+void picoPioUartRx_program_clear_buffer(){
+    while (!pio_sm_is_rx_fifo_empty(pio, sm_rx)){
+        uint32_t c32 = pio_sm_get(pio, sm_rx);
+    }
 }

@@ -15,14 +15,18 @@
 
 int main(){
     stdio_init_all();
-    CurrentSensorSetup();
-    ColorSensorSetup();
-    SuctionSetup();
+    // CurrentSensorSetup();
+    // ColorSensorSetup();
+    // SuctionSetup();
     // GyroSetup();
-    //ServoSetup();
+    ServoSetup();
     //sleep_ms(1000);
     //SetSuctionMotorSpeed(250);
     while(true){
+        SetServoAngle(servo_arm_up_and_down_pin,90);
+        SetServoAngle(servo_left_claw_pin,90);
+        SetServoAngle(servo_right_claw_pin,90);
+        sleep_ms(100);
         //adc_select_input(2);
         //int adc = adc_read();
         //printf("%d\n",adc);

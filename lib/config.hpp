@@ -48,9 +48,9 @@ extern unsigned char gyroBuffer[2];
 
 //line
 extern bool circleLineSensor[20];
-extern bool frontLineSensor[3];
-#define main_to_line_TX_pin 14 //メインマイコン
-#define main_to_line_RX_pin 15 //メインマイコン
+extern bool frontLineSensor[3]; //上から見て左から012
+#define main_to_line_TX_pin 15 //メインマイコン
+#define main_to_line_RX_pin 14 //メインマイコン
 #define line_to_main_TX_pin 12 //ラインマイコン
 #define line_to_main_RX_pin 13 //ラインマイコン
 #define circle_line_sensor_pin1 16 //ラインマイコン

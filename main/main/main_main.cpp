@@ -13,17 +13,21 @@ int main(){
     stdio_init_all();
     StepperSetup();
     DisplaySetup();
-    sleep_ms(200);
+    sleep_ms(2000);
     MainToLineSetup();
     PinSetup();
 
     while(true){
         PrintDisplayMode();
-        // WriteTextOnDisplay(5,15,"<DeltaTime>",12,true,true);
-        sleep_ms(1000);
         GetDataFromLineToMain();
-        // sleep_ms(1000);
-        // MainMotorState(100,100);
-        sleep_ms(100);
+        if(frontLineSensor[0] == true && frontLineSensor[2] == false){
+            //左に曲がる
+            MainMotorState(-125,250);
+        }else if(frontLineSensor[0] == false && frontLineSensor[2] == true){
+            //右に曲がる
+            MainMotorState(250,-125);
+        }else{
+            MainMotorState(250,250);
+        }
     }
 }

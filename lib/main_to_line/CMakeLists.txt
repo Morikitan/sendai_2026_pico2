@@ -1,6 +1,7 @@
 add_library(main_to_line main_to_line.cpp)
 
 target_include_directories(main_to_line PRIVATE ../display)
+target_include_directories(main_to_line PRIVATE ../line)
 
 target_link_libraries(main_to_line pico_stdlib hardware_pio)
 
