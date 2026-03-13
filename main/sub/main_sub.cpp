@@ -18,16 +18,22 @@ int main(){
     // CurrentSensorSetup();
     // ColorSensorSetup();
     // SuctionSetup();
+    sleep_ms(3000);
+    TofSetup();
     GyroSetup();
+    
     // ServoSetup();
-    SubToMainSetup();
+    // SubToMainSetup();
     //sleep_ms(1000);
     //SetSuctionMotorSpeed(250);
+    printf("tof使用開始\n");
     while(true){
+        UseTof();
         // SetServoAngle(servo_arm_up_and_down_pin,60);
         // SetServoAngle(servo_left_claw_pin,90);
         // SetServoAngle(servo_right_claw_pin,90);
         sleep_ms(101);
+        printf("tof使用完了\n");
         //adc_select_input(2);
         //int adc = adc_read();
         //printf("%d\n",adc);

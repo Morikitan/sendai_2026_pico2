@@ -18,19 +18,26 @@ void TofSetup(){
     gpio_set_function(tof_SDA_pin,GPIO_FUNC_I2C);
 
     i2c_init(tof_i2c,400000);
-    sensor.init();
+    printf("1");
     sensor.setTimeout(500);
+    printf("2");
+    if (!sensor.init()) {
+        printf("tofの初期化失敗\n");
+        while (1) {
+            tight_loop_contents();
+        }
+    }
+    printf("3");
     sensor.startContinuous();
+    printf("4\n");
 }
 
 void UseTof(){
     distance = sensor.readRangeContinuousMillimeters();
-    if(serialWatch == "tof"){
-            if (sensor.timeoutOccurred()){
+    if (sensor.timeoutOccurred()){
                 distance = 0xFF;
                 printf("Measurement timed out\n");
             }else{
                 printf("Distance: %u mm\n", distance);
             }
-    }
 }

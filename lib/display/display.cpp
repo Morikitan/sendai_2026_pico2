@@ -31,7 +31,7 @@ void DisplaySetup(){
     8  : tof tofの値〇
     9  : oth その他(時によって変わる)〇
     *******************/
-    serialWatch = "hom";
+    serialWatch = "tof";
     SetDisplayMode();
 
     // ディスプレイ初期化（I2C + ノーブランドSSD1309用）

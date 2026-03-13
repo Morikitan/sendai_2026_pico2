@@ -6,8 +6,6 @@ extern "C" {
 
 void ServoSetup();
 void SetServoAngle(unsigned int gpio,int angle);
-void DownArm();
-void UpArm();
 void SetServoOff(unsigned int gpio);
 void CatchBall();
 void CatchCan(bool isShake);
