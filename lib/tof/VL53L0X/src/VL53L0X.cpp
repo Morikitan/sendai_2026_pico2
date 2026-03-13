@@ -336,11 +336,8 @@ void VL53L0X::writeReg32Bit(uint8_t reg, uint32_t value)
 uint8_t VL53L0X::readReg(uint8_t reg)
 {
     uint8_t value = 0;
-    printf("書く前");
     i2c_write_blocking(i2cPort, address, &reg, 1, true); // true to keep master control of bus
-    printf("書いた後");
     i2c_read_blocking(i2cPort, address, &value, 1, false);
-    printf("読んだ後");
     return value;
 }
 uint16_t VL53L0X::readReg16Bit(uint8_t reg)

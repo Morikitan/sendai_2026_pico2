@@ -26,8 +26,7 @@ int main(){
         sleep_ms(100);
         PrintDisplayMode();
         GetGyroAngleFromSub();
-        GetDistanceFromSub();
-        // GetDataFromLineToMain();
+        // GetDistanceFromSub();
         /*if(frontLineSensor[0] == true && frontLineSensor[2] == false){
             //左に曲がる
             MainMotorState(-125,250);

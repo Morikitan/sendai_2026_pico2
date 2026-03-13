@@ -46,8 +46,7 @@ void SubCallBack(){
         case 0x02:
             //distanceの取得
             UseTof();
-            uart_write_blocking(sub_to_main_uart,(uint8_t[]){(uint8_t)(distance >> 8)},1);
-            uart_write_blocking(sub_to_main_uart,(uint8_t[]){(uint8_t)distance},1);
+            uart_write_blocking(sub_to_main_uart,(uint8_t[]){(uint8_t)(distance >> 8),(uint8_t)distance},2);
             break;
         case 0x03:
             //colorの取得
@@ -119,8 +118,11 @@ void GetGyroAngleFromSub(){
 //メインマイコンがサブマイコンからdistanceを取得する関数
 void GetDistanceFromSub(){
     uint8_t data[2];
+    printf("tof待機");
     uart_write_blocking(main_to_sub_uart,(uint8_t[]){0x02},1);
+    printf(" tof書き込み完了\n");
     uart_read_blocking(main_to_sub_uart,data,2);
+    printf(" tof読み取り完了\n");
     distance = (data[0] << 8) | data[1];
     if(serialWatch == "tof"){
         if(isUseDisplay){

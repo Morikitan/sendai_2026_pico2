@@ -17,6 +17,11 @@ void TofSetup(){
     gpio_set_function(tof_SCL_pin,GPIO_FUNC_I2C);
     gpio_set_function(tof_SDA_pin,GPIO_FUNC_I2C);
 
+    gpio_put(tof_reset_pin, 0);
+    sleep_ms(10);
+    gpio_put(tof_reset_pin, 1);
+    sleep_ms(10); // 起動待ち
+
     i2c_init(tof_i2c,400000);
     printf("1");
     sensor.setTimeout(500);
