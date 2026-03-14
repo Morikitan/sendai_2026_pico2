@@ -61,19 +61,18 @@ void SubCallBack(){
             uart_write_blocking(sub_to_main_uart,currentBuffer,6);
             break;
         case 0x11:{
+            uint8_t gpio,angle;
             //サーボを動かす
-            while(!uart_is_readable(sub_to_main_uart));
-            uint gpio = (uint)uart_getc(sub_to_main_uart);
-            while(!uart_is_readable(sub_to_main_uart));
-            int angle = (int)uart_getc(sub_to_main_uart);
+            uart_read_blocking(sub_to_main_uart,&gpio,1);
+            uart_read_blocking(sub_to_main_uart,&angle,1);
             SetServoAngle(gpio,angle);
             break;
         }
         case 0x12:{
             //吸引DCを制御する
-            while(!uart_is_readable(sub_to_main_uart));
-            uint duty = (uint)uart_getc(sub_to_main_uart);
-            SetSuctionMotorSpeed(duty);
+            uint8_t duty;
+            uart_read_blocking(sub_to_main_uart,&duty,1);
+            SetSuctionMotorSpeed(duty * 4);
             break;
         }
         default:
@@ -87,10 +86,12 @@ void SubCallBack(){
 //angle : 整数の角度(10°～170°(GPIO8,10は160°まで?))
 void SetServoAngleFromMain(unsigned int gpio,int angle){
     uart_write_blocking(main_to_sub_uart,(uint8_t[]){0x11,(uint8_t)gpio,(uint8_t)angle},3);
+    sleep_ms(1);
 }
 
 //吸引のモーターのスピードを制御する関数
-void SetSuctionMotorFromMain(int duty){
+//4で割った数値を代入する(duty = 300の場合は75)
+void SetSuctionMotorSpeedFromMain(uint8_t duty){
    uart_write_blocking(main_to_sub_uart,(uint8_t[]){0x12,(uint8_t)duty},2);
 }
 
@@ -147,11 +148,30 @@ void GetDistanceFromSub(){
 void GetColorFromSub(){
     uart_write_blocking(main_to_sub_uart,(uint8_t[]){0x03},1);
     uart_read_blocking(main_to_sub_uart,&color,1);
-    if(serialWatch == "cur"){
+    if(serialWatch == "col"){
         if(isUseDisplay){
-
+            if(color == 1){
+                WriteTextOnDisplay(5,30,"red",12,false,false);
+            }else if(color == 2){
+                WriteTextOnDisplay(5,30,"blue",12,false,false);
+            }else if(color == 3){
+                WriteTextOnDisplay(5,30,"can",12,false,false);
+            }else if(color == 255){
+                WriteTextOnDisplay(5,30,"i2c error",12,false,false);
+            }else if(color == 127){
+                WriteTextOnDisplay(5,30,"No Object",12,false,false);
+            }else{
+                snprintf(displayBuffer,displayBufferSize,"%u error",color);
+                WriteTextOnDisplay(5,30,displayBuffer,12,false,false);
+            }
         }else{
-            
+            if(color == 1){
+                printf("red\n");
+            }else if(color == 2){
+                printf("blue\n");
+            }else if(color == 3){
+                printf("can\n");
+            }
         }
     }
 }
@@ -167,9 +187,9 @@ void GetCurrentFromSub(){
         if(isUseDisplay){
             snprintf(displayBuffer,displayBufferSize,"left hand : %u",current[0]);
             WriteTextOnDisplay(5,30,displayBuffer,8,false,false);
-            snprintf(displayBuffer,displayBufferSize,"right hand : %u",current[0]);
+            snprintf(displayBuffer,displayBufferSize,"right hand : %u",current[1]);
             WriteTextOnDisplay(5,40,displayBuffer,8,false,false);
-            snprintf(displayBuffer,displayBufferSize,"DC",current[0]);
+            snprintf(displayBuffer,displayBufferSize,"DC : %u",current[2]);
             WriteTextOnDisplay(5,50,displayBuffer,8,false,false);
         }else{
             printf("left hand : %u right hand : %u DC : %u",current[0],current[1],current[2]);

@@ -31,7 +31,7 @@ void DisplaySetup(){
     8  : tof tofの値〇
     9  : oth その他(時によって変わる)〇
     *******************/
-    serialWatch = "tof";
+    serialWatch = "hom";
     SetDisplayMode();
 
     // ディスプレイ初期化（I2C + ノーブランドSSD1309用）
@@ -70,10 +70,10 @@ void PrintDisplayMode(){
         WriteTextOnDisplay(5,15,"<Camera>",12,true,false);
     }else if(displayMode == 3){
         serialWatch = "col";
-        WriteTextOnDisplay(5,15,"<ColorSensor>",12,true,false);
+        WriteTextOnDisplay(5,15,"<ColorSen>",12,true,false);
     }else if(displayMode == 4){
         serialWatch = "cur";
-        WriteTextOnDisplay(5,15,"<CurrentSensor>",12,true,false);
+        WriteTextOnDisplay(5,15,"<CurSen>",12,true,false);
     }else if(displayMode == 5){
         serialWatch = "gyr";
         WriteTextOnDisplay(5,15,"<GyroSensor>",12,true,false);

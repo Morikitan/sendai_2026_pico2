@@ -80,7 +80,7 @@ int UseColorSensor(){
         printf("I2C error\n");
         //エラー時はLEDを消灯
         gpio_put(color_sensor_LED_pin,0);
-        return -1;
+        return 255;
     }
     uint16_t red    = (data[0] << 8) | data[1];
     uint16_t green  = (data[2] << 8) | data[3];
@@ -93,7 +93,7 @@ int UseColorSensor(){
     //RGB値の確認用
     printf("R:%d G:%d B:%d\n", r, g, b);
     //objectは持っているものを表す変数　0:その他,1:赤ボール,2:青ボール,3:缶
-    int object = 0;
+    int object = 127;
     if(r > 1000){
         object = 1;
     }else if(b > 1000){

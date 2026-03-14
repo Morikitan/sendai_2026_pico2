@@ -15,18 +15,26 @@
 
 int main(){
     stdio_init_all();
+    sleep_ms(1000);
     StepperSetup();
     DisplaySetup();
     MainToLineSetup();
     MainToSubSetup();
     PinSetup();
     EncoderSetup();
-    sleep_ms(3000);
+    SetStepperSleep();
+    sleep_ms(2000);
+    
+    // SetServoAngleFromMain(servo_arm_up_and_down_pin,60);
+    SetSuctionMotorSpeedFromMain(75);//30%
     while(true){
         sleep_ms(100);
         PrintDisplayMode();
         GetGyroAngleFromSub();
-        // GetDistanceFromSub();
+        GetDistanceFromSub();
+        GetColorFromSub();
+        GetCurrentFromSub();
+        
         /*if(frontLineSensor[0] == true && frontLineSensor[2] == false){
             //左に曲がる
             MainMotorState(-125,250);

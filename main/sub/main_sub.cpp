@@ -15,16 +15,18 @@
 
 int main(){
     stdio_init_all();
-    // CurrentSensorSetup();
-    // ColorSensorSetup();
-    // SuctionSetup();
+    sleep_ms(500);
+    SubToMainSetup();
+    CurrentSensorSetup();
+    ColorSensorSetup();
+    SuctionSetup();
     TofSetup();
     GyroSetup();
     
-    // ServoSetup();
-    // SubToMainSetup();
+    ServoSetup();
+    
     //sleep_ms(1000);
-    //SetSuctionMotorSpeed(250);
+    // SetSuctionMotorSpeed(250);
     printf("tof使用開始\n");
     while(true){
         // UseTof();

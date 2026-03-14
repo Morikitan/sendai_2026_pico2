@@ -47,6 +47,8 @@ void StepperSetup(){
     //ステッパーの向きの設定
     gpio_put(stepper_left_direction_pin, 1);
     gpio_put(stepper_right_direction_pin, 1);
+    SetStepperOff(1);
+    SetStepperOff(2);
 }
 
 // slice_num : stepper_left_slice_numかstepper_right_slice_num
@@ -62,6 +64,20 @@ void SetStepperSpeed(unsigned int slice_num, unsigned int gpio, float freq_hz){
     pwm_set_wrap(slice_num, wrap);
     pwm_set_chan_level(slice_num, pwm_gpio_to_channel(gpio), wrap / 2);
     pwm_set_enabled(slice_num, true);
+}
+
+//motor 左なら1 右なら2
+void SetStepperOff(int motor){
+    if(motor == 1){
+        pwm_set_enabled(stepper_left_slice_num, true);
+    }else if(motor == 2){
+        pwm_set_enabled(stepper_right_slice_num, true);
+    }
+}
+
+//不可逆
+void SetStepperSleep(){
+    gpio_put(stepper_sleep_pin,1);
 }
 
 //speed1 : 左ステッパーのスピード

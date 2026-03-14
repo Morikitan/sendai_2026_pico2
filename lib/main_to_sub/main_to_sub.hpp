@@ -4,11 +4,13 @@
 extern "C" {
 #endif
 
+#include "pico/stdlib.h"
+
 void MainToSubSetup();
 void SubToMainSetup();
 void SubCallBack();
 void SetServoAngleFromMain(unsigned int gpio,int angle);
-void SetSuctionMotorFromMain(int duty);
+void SetSuctionMotorSpeedFromMain(uint8_t duty);
 void GetGyroAngleFromSub();
 void GetDistanceFromSub();
 void GetColorFromSub();
