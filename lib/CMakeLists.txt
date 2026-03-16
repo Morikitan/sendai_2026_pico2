@@ -1,3 +1,4 @@
+add_subdirectory(action)
 add_subdirectory(camera)
 add_subdirectory(display)
 add_subdirectory(gyro)
