@@ -10,6 +10,7 @@ void MainToSubSetup();
 void SubToMainSetup();
 void SubCallBack();
 void SetServoAngleFromMain(unsigned int gpio,int angle);
+void SetServoOffFromMain(unsigned int gpio);
 void SetSuctionMotorSpeedFromMain(uint8_t duty);
 void GetGyroAngleFromSub();
 void GetDistanceFromSub();

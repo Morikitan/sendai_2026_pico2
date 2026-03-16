@@ -132,10 +132,11 @@ extern unsigned short int distance; //mm単位
 #define color_sensor_SDA_pin 16 //サブマイコン
 #define color_sensor_SCL_pin 17 //サブマイコン
 #define color_sensor_LED_pin 13 //サブマイコン
-extern uint8_t color;
+extern uint8_t color; //127:その他,1:赤ボール,2:青ボール,3:缶
 extern uint16_t current[3];
 extern uint8_t currentBuffer[6];
 
 //others
 #define buzzer_pin 22 //メインマイコン
 #define color_LED_pin 28 //メインマイコン
+extern int canNumber;

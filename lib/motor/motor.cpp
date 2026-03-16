@@ -69,9 +69,9 @@ void SetStepperSpeed(unsigned int slice_num, unsigned int gpio, float freq_hz){
 //motor 左なら1 右なら2
 void SetStepperOff(int motor){
     if(motor == 1){
-        pwm_set_enabled(stepper_left_slice_num, true);
+        pwm_set_enabled(stepper_left_slice_num, false);
     }else if(motor == 2){
-        pwm_set_enabled(stepper_right_slice_num, true);
+        pwm_set_enabled(stepper_right_slice_num, false);
     }
 }
 

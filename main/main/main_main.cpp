@@ -1,4 +1,6 @@
 #include "display/display.hpp"
+#include "action/action.hpp"
+#include "camera/camera.hpp"
 #include "gyro/gyro.hpp"
 #include "line/line.hpp"
 #include "main_to_line/main_to_line.hpp"
@@ -26,24 +28,16 @@ int main(){
     sleep_ms(2000);
     
     // SetServoAngleFromMain(servo_arm_up_and_down_pin,60);
-    SetSuctionMotorSpeedFromMain(75);//30%
+    // SetSuctionMotorSpeedFromMain(75);//30%
     while(true){
-        sleep_ms(100);
+        if(gpio_get(tactile_switch_pin1) == true){
+            CatchBall();
+            sleep_ms(3000);
+            CatchCan();
+        }
         PrintDisplayMode();
-        GetGyroAngleFromSub();
-        GetDistanceFromSub();
-        GetColorFromSub();
-        GetCurrentFromSub();
-        
-        /*if(frontLineSensor[0] == true && frontLineSensor[2] == false){
-            //左に曲がる
-            MainMotorState(-125,250);
-        }else if(frontLineSensor[0] == false && frontLineSensor[2] == true){
-            //右に曲がる
-            MainMotorState(250,-125);
-        }else{
-            MainMotorState(250,250);
-        }*/
+        UseAllSensor();
         SendBufferToDisplay();
+        sleep_ms(100);
     }
 }

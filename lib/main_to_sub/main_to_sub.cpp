@@ -75,6 +75,11 @@ void SubCallBack(){
             SetSuctionMotorSpeed(duty * 4);
             break;
         }
+        case 0x13:{
+            uint8_t gpio;
+            uart_read_blocking(sub_to_main_uart,&gpio,1);
+            SetServoOff(gpio);
+        }
         default:
             break;
         }
@@ -86,6 +91,11 @@ void SubCallBack(){
 //angle : 整数の角度(10°～170°(GPIO8,10は160°まで?))
 void SetServoAngleFromMain(unsigned int gpio,int angle){
     uart_write_blocking(main_to_sub_uart,(uint8_t[]){0x11,(uint8_t)gpio,(uint8_t)angle},3);
+    sleep_ms(1);
+}
+
+void SetServoOffFromMain(unsigned int gpio){
+    uart_write_blocking(main_to_sub_uart,(uint8_t[]){0x13,(uint8_t)gpio},2);
     sleep_ms(1);
 }
 

@@ -62,48 +62,41 @@ void SetServoOff(unsigned int gpio){
     pwm_set_enabled(slice_num,false);
 }
 
-void CatchBall(){
-    //吸引をつける
-    SetServoAngle(servo_arm_up_and_down_pin,165);
-    sleep_ms(3000);
-    //少し前進する？
-    
-    sleep_ms(500);
-    SetServoAngle(servo_arm_up_and_down_pin,90);
-    sleep_ms(1000);
-}
-
-void CatchCan(bool isShake){
-    SetServoAngle(servo_arm_left_and_right_pin,90);
-    SetServoAngle(servo_left_claw_pin,160);
-    SetServoAngle(servo_right_claw_pin,20);
-    SetServoAngle(servo_arm_up_and_down_pin,162);
-    sleep_ms(3000);
-    //少し前進する？
-    SetServoAngle(servo_left_claw_pin,40);
-    SetServoAngle(servo_right_claw_pin,140);
-    sleep_ms(500);
-    SetServoAngle(servo_arm_up_and_down_pin,45);
-    sleep_ms(1000);
-    SetServoAngle(servo_left_claw_pin,160);
-    SetServoAngle(servo_right_claw_pin,20);
-    sleep_ms(1000);
-    SetServoAngle(servo_arm_up_and_down_pin,90);
-    if(isShake){
-        sleep_ms(250);
-        SetServoAngle(servo_sentor_basket_pin,120);
-        sleep_ms(500);
-        SetServoAngle(servo_sentor_basket_pin,160);
-        sleep_ms(500);
-        SetServoOff(servo_sentor_basket_pin);
-    }
-}
-
 void ThrowCan(){
     SetServoAngle(servo_sentor_basket_pin,60);
     sleep_ms(2000);
     SetServoAngle(servo_sentor_basket_pin,160);
     sleep_ms(500);
     SetServoOff(servo_sentor_basket_pin);
+}
+
+void CatchCanFromSub(){
+    SetServoAngle(servo_arm_left_and_right_pin,90);
+    SetServoAngle(servo_left_claw_pin,160);
+    SetServoAngle(servo_right_claw_pin,20);
+    SetServoAngle(servo_arm_up_and_down_pin,160);
+    sleep_ms(750);
+    SetServoAngle(servo_arm_up_and_down_pin,163);
+    sleep_ms(3000);
+    //少し前進する？
+    SetServoAngle(servo_right_claw_pin,140);
+    SetServoAngle(servo_left_claw_pin,40);
+    sleep_ms(1000);
+    SetServoAngle(servo_arm_up_and_down_pin,45);
+    // GetColorFromSub();
+    // if(color == 2 || color == 3)canNumber += 1;
+    sleep_ms(1000);
+    SetServoAngle(servo_left_claw_pin,160);
+    SetServoAngle(servo_right_claw_pin,20);
+    sleep_ms(1000);
+    SetServoAngle(servo_arm_up_and_down_pin,90);
+    // if(canNumber == 1 && (color == 2 || color == 3)){
+        // sleep_ms(250);
+        // SetServoAngle(servo_sentor_basket_pin,120);
+        // sleep_ms(500);
+        // SetServoAngle(servo_sentor_basket_pin,160);
+        // sleep_ms(500);
+        // SetServoOff(servo_sentor_basket_pin);
+    // }
 }
 

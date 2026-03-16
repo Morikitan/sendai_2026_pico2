@@ -10,6 +10,7 @@
 uint8_t color;
 uint16_t current[3];
 uint8_t currentBuffer[6];
+int canNumber;
 
 void ColorSensorSetup(){
     i2c_init(color_sensor_i2c, 100000);
@@ -17,7 +18,7 @@ void ColorSensorSetup(){
     gpio_set_function(color_sensor_SDA_pin, GPIO_FUNC_I2C);
     gpio_init(color_sensor_LED_pin);
     gpio_set_dir(color_sensor_LED_pin, GPIO_OUT);
-
+    canNumber = 0;
     // 固定時間モード / Lowゲイン / 22.4ms
     // bit7=0 bit6=0 bit3=0 bit2=0 bit1,0=10
     write_register(REG_CONTROL, 0x02);
@@ -73,7 +74,7 @@ bool read_registers(uint8_t start_reg, uint8_t *dest, size_t len){
 int UseColorSensor(){
     //カラーセンサー用LEDの点灯
     gpio_put(color_sensor_LED_pin,1);
-    sleep_ms(10);
+    sleep_ms(100);
     //データの読み出し
     uint8_t data[8];
     if (!read_registers(REG_DATA_RED_H, data, 8)) {
@@ -92,7 +93,7 @@ int UseColorSensor(){
     int b = blue  > corr ? blue  - corr : 0;
     //RGB値の確認用
     printf("R:%d G:%d B:%d\n", r, g, b);
-    //objectは持っているものを表す変数　0:その他,1:赤ボール,2:青ボール,3:缶
+    //objectは持っているものを表す変数　127:その他,1:赤ボール,2:青ボール,3:缶
     int object = 127;
     if(r > 1000){
         object = 1;
@@ -103,6 +104,7 @@ int UseColorSensor(){
     }
     printf("Object:%d\n",object);
     //LEDの消灯
+    gpio_put(color_sensor_LED_pin,0);
     return object;
 }
 

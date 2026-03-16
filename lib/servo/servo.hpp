@@ -7,10 +7,8 @@ extern "C" {
 void ServoSetup();
 void SetServoAngle(unsigned int gpio,int angle);
 void SetServoOff(unsigned int gpio);
-void CatchBall();
-void CatchCan(bool isShake);
 void ThrowCan();
-void CatchPetBottle();
+void CatchCanFromSub();
 
 #ifdef __cplusplus
 }
