@@ -4,6 +4,7 @@
 extern "C" {
 #endif
 
+void RotationToAngle(int target_angle);
 void CatchPetBottle();
 void CatchBall();
 void CatchCan();

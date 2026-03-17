@@ -26,7 +26,6 @@ int main(){
     EncoderSetup();
     SetStepperSleep();
     sleep_ms(2000);
-    
     // SetServoAngleFromMain(servo_arm_up_and_down_pin,60);
     // SetSuctionMotorSpeedFromMain(75);//30%
     while(true){
@@ -34,6 +33,8 @@ int main(){
             CatchBall();
             sleep_ms(3000);
             CatchCan();
+        }else if(gpio_get(tactile_switch_pin2) == true){
+            RotationToAngle(0);
         }
         PrintDisplayMode();
         UseAllSensor();

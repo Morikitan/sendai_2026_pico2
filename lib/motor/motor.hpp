@@ -12,6 +12,7 @@ void SetStepperOff(int motor);
 void MainMotorState(int speed1,int speed2);
 void SuctionSetup();
 void SetSuctionMotorSpeed(uint duty);
+void SetStepperON();
 void SetStepperSleep();
 
 #ifdef __cplusplus

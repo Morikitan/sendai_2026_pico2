@@ -14,20 +14,49 @@
 #include <math.h>
 #include <stdio.h>
 
+void RotationToAngle(int target_angle){
+    SetStepperON();
+    //目標角度を0度から360度の間に補正
+    target_angle = target_angle % 360;
+    if (target_angle < 0) {
+        target_angle += 360;
+    }
+    while(true){
+        GetGyroAngleFromSub();
+        //rotation_angleは回転角
+        float rotation_angle = target_angle - angleX;
+        if(rotation_angle < 0){
+            rotation_angle += 360; 
+        }
+        if(rotation_angle < 2 || rotation_angle > 358){
+            break;
+        }
+        //回転角が180°未満なら時計回り,180度以上なら反時計回り
+        if(rotation_angle < 180){
+            MainMotorState(150,-150);
+        }else if(rotation_angle >= 180){
+            MainMotorState(-150,150);
+        }
+        sleep_ms(5);
+    }
+    MainMotorState(0,0);
+}
+
 void CatchBall(){
     //ボールを探す挙動
 
     //tofで探す
     uint32_t tofTime = time_us_32();
     do{
+        SetStepperON();
         MainMotorState(100,100);
         GetDistanceFromSub();
         if(distance > 235){
             tofTime = time_us_32();
         }
     }while(tofTime + 100000 < time_us_32());
+    SetStepperSleep();
     MainMotorState(0,0);
-
     SetServoAngleFromMain(servo_arm_up_and_down_pin,155);
     SetServoAngleFromMain(servo_arm_left_and_right_pin,90);
     SetServoAngleFromMain(servo_left_claw_pin,90);
@@ -39,7 +68,7 @@ void CatchBall(){
     sleep_ms(2000);
     SetServoAngleFromMain(servo_arm_up_and_down_pin,90);
     sleep_ms(1000);
-    SetServoAngleFromMain(servo_arm_up_and_down_pin,50);
+    SetServoAngleFromMain(servo_arm_up_and_down_pin,60);
     uint32_t colorTime = time_us_32();
     color = 0;
     while(true){

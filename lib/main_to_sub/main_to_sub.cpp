@@ -109,7 +109,7 @@ void SetSuctionMotorSpeedFromMain(uint8_t duty){
 void GetGyroAngleFromSub(){
     // printf("送信\n");
     uart_write_blocking(main_to_sub_uart,(uint8_t[]){0x01},1);
-    // printf("受信町\n");
+    // printf("受信待ち\n");
     uart_read_blocking(main_to_sub_uart,gyroBuffer,2);
     // printf("受信\n");
     angleX = ((gyroBuffer[1] << 8) | gyroBuffer[0]) / 16.0;

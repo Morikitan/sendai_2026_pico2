@@ -57,7 +57,6 @@ void StepperSetup(){
 void SetStepperSpeed(unsigned int slice_num, unsigned int gpio, float freq_hz){
     const uint wrap = 10000;                // 解像度
     float clkdiv = 150000000 / (freq_hz * wrap);
-    if (clkdiv < 1.0f) clkdiv = 1.0f;
     if (clkdiv > 255.0f) clkdiv = 255.0f;
 
     pwm_set_clkdiv(slice_num, clkdiv);
@@ -73,6 +72,10 @@ void SetStepperOff(int motor){
     }else if(motor == 2){
         pwm_set_enabled(stepper_right_slice_num, false);
     }
+}
+
+void SetStepperON(){
+    gpio_put(stepper_sleep_pin,0);
 }
 
 //不可逆
