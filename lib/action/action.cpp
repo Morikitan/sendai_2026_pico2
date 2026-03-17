@@ -18,9 +18,9 @@
 void BuzzerRing(int times, int length){
     int sleeptimes;
     if(length == 1){
-        sleeptimes = 100;
+        sleeptimes = 200;
     }else if(length == 0){
-        sleeptimes = 50;
+        sleeptimes = 100;
     }
     for (int  i = 0; i < times; i++){
         gpio_put(buzzer_pin,1);
@@ -32,10 +32,10 @@ void BuzzerRing(int times, int length){
 
 void LineTrace(){
     GetDataFromLineToMain();
-    if(frontLineSensor[0] == true && frontLineSensor[2] == true){
+    if(frontLineSensor[0] == true && frontLineSensor[1]==true && frontLineSensor[2] == true){
         MainMotorState(250,250);
         BuzzerRing(2,0);
-        sleep_ms(100);
+        sleep_ms(500);
     }
     if(frontLineSensor[0] == true && frontLineSensor[2] == false){
         //左に曲がる
