@@ -14,6 +14,41 @@
 #include <math.h>
 #include <stdio.h>
 
+//ブザーを鳴らす　count:回数　length:0で短1で長
+void BuzzerRing(int times, int length){
+    int sleeptimes;
+    if(length == 1){
+        sleeptimes = 100;
+    }else if(length == 0){
+        sleeptimes = 50;
+    }
+    for (int  i = 0; i < times; i++){
+        gpio_put(buzzer_pin,1);
+        sleep_ms(sleeptimes);
+        gpio_put(buzzer_pin,0);
+        sleep_ms(sleeptimes);
+    }    
+}
+
+void LineTrace(){
+    GetDataFromLineToMain();
+    if(frontLineSensor[0] == true && frontLineSensor[2] == true){
+        MainMotorState(250,250);
+        BuzzerRing(2,0);
+        sleep_ms(100);
+    }
+    if(frontLineSensor[0] == true && frontLineSensor[2] == false){
+        //左に曲がる
+        MainMotorState(-125,250);
+    }else if(frontLineSensor[0] == false && frontLineSensor[2] == true){
+        //右に曲がる
+        MainMotorState(250,-125);
+    }else{
+        MainMotorState(250,250);
+    }
+    sleep_ms(5);
+}
+
 void RotationToAngle(int target_angle){
     SetStepperON();
     //目標角度を0度から360度の間に補正
@@ -40,6 +75,7 @@ void RotationToAngle(int target_angle){
         sleep_ms(5);
     }
     MainMotorState(0,0);
+    SetStepperSleep();
 }
 
 void CatchBall(){
@@ -161,21 +197,9 @@ void CatchPetBottle(){
     sleep_ms(2000);
 }
 
-void LineTrace(){
-    if(frontLineSensor[0] == true && frontLineSensor[2] == false){
-            //左に曲がる
-            MainMotorState(-125,250);
-        }else if(frontLineSensor[0] == false && frontLineSensor[2] == true){
-            //右に曲がる
-            MainMotorState(250,-125);
-        }else{
-            MainMotorState(250,250);
-        }
-}
-
 void UseAllSensor(){
     UseCamera();
-    UseLineSensor();
+    GetDataFromLineToMain();
     GetGyroAngleFromSub();
     GetDistanceFromSub();
     GetColorFromSub();

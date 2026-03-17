@@ -35,6 +35,11 @@ int main(){
             CatchCan();
         }else if(gpio_get(tactile_switch_pin2) == true){
             RotationToAngle(0);
+        }else if(gpio_get(tactile_switch_pin3) == true){
+            SetStepperON();
+            while(true){
+                LineTrace();
+            }
         }
         PrintDisplayMode();
         UseAllSensor();

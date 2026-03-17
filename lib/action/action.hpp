@@ -4,7 +4,9 @@
 extern "C" {
 #endif
 
+void BuzzerRing(int times, int length);
 void RotationToAngle(int target_angle);
+void LineTrace();
 void CatchPetBottle();
 void CatchBall();
 void CatchCan();
