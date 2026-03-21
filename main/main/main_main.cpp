@@ -25,8 +25,9 @@ int main(){
     PinSetup();
     EncoderSetup();
     SetStepperSleep();
+    LineTraceSetup();
     sleep_ms(2000);
-    // SetServoAngleFromMain(servo_arm_up_and_down_pin,60);
+    SetServoAngleFromMain(servo_arm_up_and_down_pin,60);
     // SetSuctionMotorSpeedFromMain(75);//30%
     while(true){
         if(gpio_get(tactile_switch_pin1) == true){
@@ -38,7 +39,9 @@ int main(){
         }else if(gpio_get(tactile_switch_pin3) == true){
             SetStepperON();
             while(true){
-                LineTrace();
+                PrintDisplayMode();
+                MainMove();
+                SendBufferToDisplay();
             }
         }
         PrintDisplayMode();

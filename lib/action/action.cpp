@@ -14,6 +14,19 @@
 #include <math.h>
 #include <stdio.h>
 
+int lineNumber;
+int preLineAngle;
+int lineAngle;
+int lastLineTime; //ミリ秒
+bool isLineBuzzerOn;
+
+void LineTraceSetup(){
+    lineNumber = 0;
+    preLineAngle = 0;
+    lineAngle = 0;
+    lastLineTime;
+}
+
 //ブザーを鳴らす　count:回数　length:0で短1で長
 void BuzzerRing(int times, int length){
     int sleeptimes;
@@ -30,23 +43,102 @@ void BuzzerRing(int times, int length){
     }    
 }
 
+void MainMove(){
+    if(lineNumber < 4){
+        LineTrace();
+    }else if(lineNumber < 5){
+        while(preLineAngle != 90){
+            LineTrace();
+        }
+        RotationToAngle(90);
+        gpio_put(buzzer_pin,0);
+        uint32_t now = time_us_32();
+        while(!gpio_get(touch_sensor_front_left_pin)){
+            if(angleX < 89.5){
+                MainMotorState(400,395);
+            }else if(angleX > 90.5){
+                MainMotorState(395,400);
+            }else{
+                MainMotorState(400,400);
+            }
+            GetGyroAngleFromSub();
+        }
+        GetDataFromLineToMain();
+        while(!circleLineSensor[15]){
+            MainMotorState(-200,-200);
+            GetDataFromLineToMain();
+        }
+        MainMotorState(200,200);
+        sleep_ms(200);
+        RotationToAngle(180);
+        while(!gpio_get(touch_sensor_back_left_pin)){
+            MainMotorState(-200,-200);
+        }
+        MainMotorState(0,0);
+        SetStepperOff(1);
+        SetStepperOff(2);
+        sleep_ms(100000000);
+    }
+}
+
 void LineTrace(){
     GetDataFromLineToMain();
+    GetGyroAngleFromSub();
     if(frontLineSensor[0] == true && frontLineSensor[1]==true && frontLineSensor[2] == true){
-        MainMotorState(250,250);
-        BuzzerRing(2,0);
-        sleep_ms(500);
+        if(time_us_32() / 1000 > lastLineTime + 1000){
+            gpio_put(buzzer_pin,1);
+            lineNumber++;
+            isLineBuzzerOn = true;
+            lastLineTime = time_us_32() / 1000;
+        }
+    }
+    if(isLineBuzzerOn){
+        if(time_us_32() / 1000 > lastLineTime + 500){
+            gpio_put(buzzer_pin,0);
+        }
     }
     if(frontLineSensor[0] == true && frontLineSensor[2] == false){
         //左に曲がる
-        MainMotorState(-125,250);
-    }else if(frontLineSensor[0] == false && frontLineSensor[2] == true){
+        if((lineAngle == 0 && preLineAngle == 270) || (lineAngle == preLineAngle + 90)){
+            MainMotorState(125,125);
+        }else{
+            MainMotorState(-125,250);
+        }
+    }else if(frontLineSensor[0] == false && frontLineSensor[2] == true && !((lineAngle == 270 && preLineAngle == 0) || (lineAngle == preLineAngle - 90))){
         //右に曲がる
-        MainMotorState(250,-125);
+        MainMotorState(124,-62);
     }else{
-        MainMotorState(250,250);
+        if((lineAngle == 270 && preLineAngle == 0) || (lineAngle == preLineAngle - 90)){
+            //左に曲がる
+            MainMotorState(50,250);
+        }else if((lineAngle == 0 && preLineAngle == 270) || (lineAngle == preLineAngle + 90)){
+            //右に曲がる
+            MainMotorState(125,25);
+        }else{
+            MainMotorState(400,400);
+        }
     }
-    sleep_ms(5);
+    //lineAngleの設定
+    if((lineAngle == 0 && (20 < angleX && angleX <= 180)) || (lineAngle != 0 && angleX > lineAngle + 20)){
+        if(lineAngle == 270)lineAngle = 0;
+        else lineAngle += 90;
+    }else if((lineAngle == 0 && (180 <= angleX && angleX < 340)) || (lineAngle != 0 && angleX < lineAngle - 20)){
+        if(lineAngle == 0)lineAngle = 270;
+        else lineAngle -= 90;
+    }
+    //preLineAngleの設定
+    if(lineAngle != preLineAngle){
+        if(lineAngle == preLineAngle + 90 && lineAngle - 5 < angleX){
+            preLineAngle = lineAngle;
+        }else if(lineAngle == 0 && preLineAngle == 270 && (355 < angleX || angleX < 180)){
+            preLineAngle = lineAngle;
+        }else if(lineAngle == preLineAngle - 90 && (angleX < lineAngle + 5 || (lineAngle = 0 && angleX > 180))){
+            preLineAngle = lineAngle;
+        }else if(lineAngle == 270 && preLineAngle == 0 && (180 < angleX && angleX < 275)){
+            preLineAngle = lineAngle;
+        }
+    }
+    sleep_ms(1);
 }
 
 void RotationToAngle(int target_angle){
@@ -75,7 +167,6 @@ void RotationToAngle(int target_angle){
         sleep_ms(5);
     }
     MainMotorState(0,0);
-    SetStepperSleep();
 }
 
 void CatchBall(){

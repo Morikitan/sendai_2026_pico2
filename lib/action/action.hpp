@@ -4,8 +4,10 @@
 extern "C" {
 #endif
 
+void LineTraceSetup();
 void BuzzerRing(int times, int length);
 void RotationToAngle(int target_angle);
+void MainMove();
 void LineTrace();
 void CatchPetBottle();
 void CatchBall();
