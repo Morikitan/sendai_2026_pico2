@@ -12,6 +12,7 @@ void LineTrace();
 void CatchPetBottle();
 void CatchBall();
 void CatchCan();
+void ThrowCan();
 void UseAllSensor();
 
 #ifdef __cplusplus
