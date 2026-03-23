@@ -19,6 +19,12 @@ int preLineAngle;
 int lineAngle;
 int lastLineTime; //ミリ秒
 bool isLineBuzzerOn;
+float lineVector;
+
+#define RightCircleLine circleLineSensor[11] + circleLineSensor[12] + circleLineSensor[13] + circleLineSensor[14] + circleLineSensor[15] + circleLineSensor[16] + circleLineSensor[17] + circleLineSensor[18] + circleLineSensor[19]
+#define LeftCircleLine circleLineSensor[1] + circleLineSensor[2] + circleLineSensor[3] + circleLineSensor[4] + circleLineSensor[5] + circleLineSensor[6] + circleLineSensor[7] + circleLineSensor[8] + circleLineSensor[9]
+#define RightFrontCircleLine circleLineSensor[16] + circleLineSensor[17] + circleLineSensor[18]
+#define LeftFrontCircleLine circleLineSensor[2] + circleLineSensor[3] + circleLineSensor[4]
 
 void LineTraceSetup(){
     lineNumber = 0;
@@ -45,10 +51,10 @@ void BuzzerRing(int times, int length){
 
 void MainMove(){
     if(lineNumber < 4){
-        LineTrace();
+        NewLineTrace();
     }else if(lineNumber < 5){
         while(preLineAngle != 90){
-            LineTrace();
+            NewLineTrace();
         }
         RotationToAngle(90);
         gpio_put(buzzer_pin,0);
@@ -116,6 +122,56 @@ void LineTrace(){
             MainMotorState(125,25);
         }else{
             MainMotorState(400,400);
+        }
+    }
+    //lineAngleの設定
+    if((lineAngle == 0 && (20 < angleX && angleX <= 180)) || (lineAngle != 0 && angleX > lineAngle + 20)){
+        if(lineAngle == 270)lineAngle = 0;
+        else lineAngle += 90;
+    }else if((lineAngle == 0 && (180 <= angleX && angleX < 340)) || (lineAngle != 0 && angleX < lineAngle - 20)){
+        if(lineAngle == 0)lineAngle = 270;
+        else lineAngle -= 90;
+    }
+    //preLineAngleの設定
+    if(lineAngle != preLineAngle){
+        if(lineAngle == preLineAngle + 90 && lineAngle - 5 < angleX){
+            preLineAngle = lineAngle;
+        }else if(lineAngle == 0 && preLineAngle == 270 && (355 < angleX || angleX < 180)){
+            preLineAngle = lineAngle;
+        }else if(lineAngle == preLineAngle - 90 && (angleX < lineAngle + 5 || (lineAngle = 0 && angleX > 180))){
+            preLineAngle = lineAngle;
+        }else if(lineAngle == 270 && preLineAngle == 0 && (180 < angleX && angleX < 275)){
+            preLineAngle = lineAngle;
+        }
+    }
+    sleep_ms(1);
+}
+
+//円形ラインセンサを使ったライントレース
+void NewLineTrace(){
+    GetDataFromLineToMain();
+    GetGyroAngleFromSub();
+    GetCircleLineVector(20,true);
+    if(RightFrontCircleLine > 0 && LeftFrontCircleLine > 0){
+        //十字の感知
+        if(time_us_32() / 1000 > lastLineTime + 1000){
+            gpio_put(buzzer_pin,1);
+            lineNumber++;
+            isLineBuzzerOn = true;
+            lastLineTime = time_us_32() / 1000;
+        }
+    }else if(RightCircleLine > 0 && LeftCircleLine == 0){
+        //右に曲がる
+        MainMotorState(250,-125);
+    }else if(RightCircleLine == 0 && LeftCircleLine > 0){
+        //左に曲がる
+        MainMotorState(-125,250);
+    }else{
+        MainMotorState(400,400);
+    }
+    if(isLineBuzzerOn){
+        if(time_us_32() / 1000 > lastLineTime + 500){
+            gpio_put(buzzer_pin,0);
         }
     }
     //lineAngleの設定
@@ -307,4 +363,111 @@ void UseAllSensor(){
     GetDistanceFromSub();
     GetColorFromSub();
     GetCurrentFromSub();
+}
+
+float result;
+int VectorNumber;
+float VectorAbsoluteValue;
+//円形ラインセンサのベクトルの和の向きを計算する
+//number : ラインセンサの数
+//isFrontLine : 真正面0°にラインセンサがあるのか
+//最後は時計回りの0～360で出力
+float GetCircleLineVector(int number,bool isFrontLine){
+    if(number == 0) return 0.0;
+    //データを使える形に変換する
+
+    int DoneLineSensor[number];
+    float Vector[number];
+    int Weight[number];
+    VectorNumber = 0;
+    for(int i = 0;i < number;i++){
+        DoneLineSensor[i] = false;
+        Vector[i] = 0;
+        Weight[i] = 0;
+    }  
+    for(int i = 0;i < number;i++){
+      if(circleLineSensor[i] > 0 && DoneLineSensor[i] == false){
+        if(i == 0){
+          //LineSensor[0]だけ時計回り側にあるセンサを考える
+          int k = number - 1;
+          while(k >= 1 && circleLineSensor[k] > 0){
+            DoneLineSensor[k] = true;
+            k--;
+          }
+          Vector[VectorNumber] -= (number - 1 - k) * (180.0 / number);
+          Weight[VectorNumber] += number - 1 - k;
+        }
+        int j = 1;
+        while(i + j <= number - 1 && circleLineSensor[i+j] > 0){
+            DoneLineSensor[i + j] = true;
+            j++;
+        }
+        Vector[VectorNumber] += (j - 1)*(180.0 / number) + (360.0 / number) * i;
+        Weight[VectorNumber] += j;
+
+        VectorNumber++;
+        DoneLineSensor[i] = true;
+        if(VectorNumber >= number) break;
+      }
+    }
+
+    //ベクトルの合成をする
+  float VectorX = 0;
+  float VectorY = 0;
+  for(int i = 0;i < VectorNumber;i++){
+    VectorX -= sin(Vector[i] / 180.0 * 3.1415);
+    VectorY += cos(Vector[i] / 180.0 * 3.1415);
+    // if(serialWatch == "vec" || serialWatch == "lin"){
+    //   printf("%d : %f ",i,Vector[i]);
+    // }
+  }
+  if(VectorNumber == 0){
+    VectorX = 999;
+    VectorY = 999;
+  }else{
+    VectorX /= (float)VectorNumber;
+    VectorY /= (float)VectorNumber;
+  }
+  if(isFrontLine == true) result = atan2(VectorY,VectorX) / 3.1415 * -180 + 90;
+  else result = atan2(VectorY,VectorX) / 3.1415 * -180 + 90 - (180.0 / number);
+
+  while(result < 0) result += 360.0;
+  while(result >= 360) result -= 360.0;
+  VectorAbsoluteValue = sqrt(VectorX * VectorX + VectorY * VectorY);
+
+  if(serialWatch == "vec"){
+    printf(" 向き : ");
+    if(VectorX == 999 && VectorY == 999){
+      printf("ラインの上にいない!!\n");
+    }else if(VectorX == 0 && VectorY == 0){
+      printf("真ん中\n");
+    }else{
+      printf("%f\n",result);
+    }
+  }
+
+  //例外処理
+  if(VectorX == 999 && VectorY == 999){
+    //ラインがない
+    result = -999.9;
+  }
+  if((VectorNumber == 2 && Vector[0] == 0.0 && Vector[1] == 180.0) || (VectorNumber == 1 && Vector[0] == 0) || (VectorNumber == 1 && Vector[0] == 180)){
+    //直線上
+    result = 999.9;
+  }
+  if(serialWatch == "lin"){
+    if(isUseDisplay){
+        snprintf(displayBuffer,displayBufferSize,"%.2f",result);
+        WriteTextOnDisplay(64,60,displayBuffer,10,false,false);
+        if(result > 999){
+            DrawLineOnDisplay(7,32,50,0.0);
+        }else if(result != -999.9){
+            DrawLineOnDisplay(32+(int)(VectorY * 32.0),32+(int)(VectorX * 32.0),(int)((1-VectorAbsoluteValue) * 30),(result) / 180.0 * 3.1415 + 1.5708);
+            DrawLineOnDisplay(32+(int)(VectorY * 32.0),32+(int)(VectorX * 32.0),(int)((1-VectorAbsoluteValue) * 30),(result + 180) / 180.0 * 3.1415 + 1.5708);
+        }
+    }else{
+        printf(" vector : %.2f ",result);
+    }
+  }
+  return result;
 }

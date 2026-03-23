@@ -129,11 +129,11 @@ void GetGyroAngleFromSub(){
 //メインマイコンがサブマイコンからdistanceを取得する関数
 void GetDistanceFromSub(){
     uint8_t data[2];
-    printf("tof待機");
+    // printf("tof待機");
     uart_write_blocking(main_to_sub_uart,(uint8_t[]){0x02},1);
-    printf(" tof書き込み完了\n");
+    // printf(" tof書き込み完了\n");
     uart_read_blocking(main_to_sub_uart,data,2);
-    printf(" tof読み取り完了\n");
+    // printf(" tof読み取り完了\n");
     distance = (data[0] << 8) | data[1];
     if(serialWatch == "tof"){
         if(isUseDisplay){
@@ -202,7 +202,7 @@ void GetCurrentFromSub(){
             snprintf(displayBuffer,displayBufferSize,"DC : %u",current[2]);
             WriteTextOnDisplay(5,50,displayBuffer,8,false,false);
         }else{
-            printf("left hand : %u right hand : %u DC : %u",current[0],current[1],current[2]);
+            printf("left hand : %u right hand : %u DC : %u\n",current[0],current[1],current[2]);
         }
     }
 }

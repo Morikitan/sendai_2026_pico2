@@ -94,9 +94,9 @@ void PutDataFromLineToMain(){
 }
 
 void GetDataFromLineToMain(){
-    printf("データ要求");
+    // printf("データ要求");
     picoPioUartTx_program_putc(0x36,true);
-    printf(" 受信1");
+    // printf(" 受信1");
     uint8_t data1 = picoPioUartRx_program_getc(true,&parity_check);
     if(parity_check == false){
         printf(" 受信失敗");
@@ -113,7 +113,7 @@ void GetDataFromLineToMain(){
             circleLineSensor[i] = false;
         }
     }
-    printf(" 受信2");
+    // printf(" 受信2");
     uint8_t data2 = picoPioUartRx_program_getc(true,&parity_check);
     if(parity_check == false){
         printf(" 受信失敗");
@@ -130,7 +130,7 @@ void GetDataFromLineToMain(){
             circleLineSensor[i+8] = false;
         }
     }
-    printf(" 受信3");
+    // printf(" 受信3");
     uint8_t data3 = picoPioUartRx_program_getc(true,&parity_check);
     if(parity_check == false){
         printf(" 受信失敗");
@@ -184,7 +184,7 @@ void GetDataFromLineToMain(){
             printf("\n");
         }
     }
-    printf(" %X %X %X\n",data1,data2,data3);
+    // printf(" %X %X %X\n",data1,data2,data3);
     //データを受け取り終わったら返信する
     picoPioUartTx_program_putc(0x12,true);
 }
