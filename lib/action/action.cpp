@@ -279,24 +279,25 @@ void CatchPetBottle(){
     sleep_ms(1000);
     //指定の場所まで移動
     RotationToAngle(270);
-    while(!gpio_get(touch_sensor_front_left_pin) || !gpio_get(touch_sensor_front_right_pin)){
-        if(gpio_get(touch_sensor_front_left_pin) && !gpio_get(touch_sensor_front_right_pin)){
-            MainMotorState(0,200);
-        }else if(!gpio_get(touch_sensor_front_left_pin) && gpio_get(touch_sensor_front_right_pin)){
-            MainMotorState(200,0);
-        }else{
+    sleep_ms(500);
+    while(!gpio_get(touch_sensor_front_left_pin) && !gpio_get(touch_sensor_front_right_pin)){
             MainMotorState(200,200);
-        }
     }
-    MainMotorState(0,0);
-    for(int i = 90; i <= 140;i += 10){
+    for(int i = 90; i <= 160;i += 10){
+        MainMotorState(-10,-10);
         sleep_ms(200);
         SetServoAngleFromMain(servo_arm_up_and_down_pin,i);
     }
-    sleep_ms(2000);
+    MainMotorState(0,0);
+    SetStepperSleep();
+    sleep_ms(500);
     SetServoAngleFromMain(servo_left_claw_pin,90);
     SetServoAngleFromMain(servo_right_claw_pin,90);
-    sleep_ms(2000);
+    sleep_ms(1000);
+    SetServoAngleFromMain(servo_arm_up_and_down_pin,60);
+    sleep_ms(500);
+    SetServoAngleFromMain(servo_arm_left_and_right_pin,90);
+    sleep_ms(1000);
 }
 
 void UseAllSensor(){
