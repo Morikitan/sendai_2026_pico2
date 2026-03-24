@@ -63,6 +63,9 @@ void SetStepperSpeed(unsigned int slice_num, unsigned int gpio, float freq_hz){
     pwm_set_wrap(slice_num, wrap);
     pwm_set_chan_level(slice_num, pwm_gpio_to_channel(gpio), wrap / 2);
     pwm_set_enabled(slice_num, true);
+    if(freq_hz == 0){
+        pwm_set_enabled(slice_num,false);
+    }
 }
 
 //motor 左なら1 右なら2
