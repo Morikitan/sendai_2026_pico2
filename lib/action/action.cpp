@@ -312,20 +312,30 @@ void CatchCan(){
     }
 }
 
-void TrashCan(){
+//objectは赤ボールが1,青ボールが2,缶が3
+void TrashfromBasket(int object){
     RotationToAngle(90);
+    //ゴールまで下がる
     MainMotorState(-200,-200);
     GetDataFromLineToMain();
     sleep_ms(500);
-    while(!circleLineSensor[7] && !circleLineSensor[12]){
+    while(!circleLineSensor[7] || !circleLineSensor[12]){
         sleep_ms(10);
         GetDataFromLineToMain();
     }
     MainMotorState(0,0);
     SetStepperSleep();
-    SetServoAngleFromMain(servo_sentor_basket_pin,80);
+    int basket;
+    if(object == 1){
+        basket = servo_left_basket_pin;
+    }else if(object == 2){
+        basket = servo_right_basket_pin;
+    }else if(object == 3){
+        basket = servo_sentor_basket_pin;
+    }
+    SetServoAngleFromMain(basket,80);
     sleep_ms(1000);
-    SetServoAngleFromMain(servo_sentor_basket_pin,160);
+    SetServoAngleFromMain(basket,160);
     SetStepperON();    
 }
 

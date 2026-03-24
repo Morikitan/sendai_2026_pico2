@@ -36,7 +36,7 @@ int main(){
             CatchCan();
         }else if(gpio_get(tactile_switch_pin2) == true){
             //CatchPetBottle();
-            TrashCan();
+            TrashfromBasket(3);
         }else if(gpio_get(tactile_switch_pin3) == true){
             SetStepperON();
             while(true){
