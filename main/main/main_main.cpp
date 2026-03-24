@@ -47,7 +47,7 @@ int main(){
         }
         PrintDisplayMode();
         UseAllSensor();
-        GetCircleLineVector(20,true);
+        GetCircleLineVector(20,true,true);
         SendBufferToDisplay();
         sleep_ms(100);
     }

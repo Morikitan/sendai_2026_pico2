@@ -15,7 +15,7 @@ void CatchBall();
 void CatchCan();
 void TrashfromBasket(int object);
 void UseAllSensor();
-float GetCircleLineVector(int number,bool isFrontLine);
+float GetCircleLineVector(int number,bool isFrontLine,bool isGetJuji);
 
 #ifdef __cplusplus
 }

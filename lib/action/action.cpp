@@ -151,7 +151,7 @@ void LineTrace(){
 void NewLineTrace(){
     GetDataFromLineToMain();
     GetGyroAngleFromSub();
-    GetCircleLineVector(20,true);
+    GetCircleLineVector(20,true,true);
     if(RightFrontCircleLine > 0 && LeftFrontCircleLine > 0){
         //十字の感知
         if(time_us_32() / 1000 > lastLineTime + 1000){
@@ -304,11 +304,11 @@ void CatchCan(){
     SetServoAngleFromMain(servo_arm_up_and_down_pin,90);
     if(canNumber == 1 && (color == 1 || color == 3)){
         sleep_ms(250);
-        SetServoAngleFromMain(servo_sentor_basket_pin,120);
+        SetServoAngleFromMain(servo_centor_basket_pin,120);
         sleep_ms(750);
-        SetServoAngleFromMain(servo_sentor_basket_pin,160);
+        SetServoAngleFromMain(servo_centor_basket_pin,160);
         sleep_ms(500);
-        SetServoOffFromMain(servo_sentor_basket_pin);
+        SetServoOffFromMain(servo_centor_basket_pin);
     }
 }
 
@@ -331,7 +331,7 @@ void TrashfromBasket(int object){
     }else if(object == 2){
         basket = servo_right_basket_pin;
     }else if(object == 3){
-        basket = servo_sentor_basket_pin;
+        basket = servo_centor_basket_pin;
     }
     SetServoAngleFromMain(basket,80);
     sleep_ms(1000);
@@ -395,11 +395,13 @@ void UseAllSensor(){
 float result;
 int VectorNumber;
 float VectorAbsoluteValue;
+float jujiAngle;
 //円形ラインセンサのベクトルの和の向きを計算する
 //number : ラインセンサの数
 //isFrontLine : 真正面0°にラインセンサがあるのか
+//isGetJuji : 十字を取得するか
 //最後は時計回りの0～360で出力
-float GetCircleLineVector(int number,bool isFrontLine){
+float GetCircleLineVector(int number,bool isFrontLine,bool isGetJuji){
     if(number == 0) return 0.0;
     //データを使える形に変換する
 
@@ -411,7 +413,8 @@ float GetCircleLineVector(int number,bool isFrontLine){
         DoneLineSensor[i] = false;
         Vector[i] = 0;
         Weight[i] = 0;
-    }  
+    }
+
     for(int i = 0;i < number;i++){
       if(circleLineSensor[i] > 0 && DoneLineSensor[i] == false){
         if(i == 0){
@@ -482,6 +485,97 @@ float GetCircleLineVector(int number,bool isFrontLine){
     //直線上
     result = 999.9;
   }
+
+  //十字の検知
+  if(isGetJuji == true){
+    if(VectorNumber == 3){
+        float jujiVectorX,jujiVectorY;
+        jujiAngle = 0;
+        if((Vector[0] <= 60 || Vector[0] >= 300) && (Vector[1] <= 60 || Vector[1] >= 300) && (120 <= Vector[2] && Vector[2] <= 240)){
+            //0,1が前で2が後ろ
+            VectorX = ((sin(Vector[0] / 180.0 * 3.1415) + sin(Vector[1] / 180.0 * 3.1415)) / 2.0 + sin(Vector[2] / 180.0 * 3.1415)) / -2.0;
+            VectorY = ((cos(Vector[0] / 180.0 * 3.1415) + cos(Vector[1] / 180.0 * 3.1415)) / 2.0 + cos(Vector[2] / 180.0 * 3.1415)) / 2.0;
+            jujiVectorX = (sin(Vector[0] / 180.0 * 3.1415) + sin(Vector[1] / 180.0 * 3.1415)) / -2.0;
+            jujiVectorY = (cos(Vector[0] / 180.0 * 3.1415) + cos(Vector[1] / 180.0 * 3.1415)) / 2.0;
+        }else if((Vector[0] <= 60 || Vector[0] >= 300) && (Vector[2] <= 60 || Vector[2] >= 300) && (120 <= Vector[1] && Vector[1] <= 240)){
+            //0,2が前で1が後ろ
+            VectorX = ((sin(Vector[0] / 180.0 * 3.1415) + sin(Vector[2] / 180.0 * 3.1415)) / 2.0 + sin(Vector[1] / 180.0 * 3.1415)) / -2.0;
+            VectorY = ((cos(Vector[0] / 180.0 * 3.1415) + cos(Vector[2] / 180.0 * 3.1415)) / 2.0 + cos(Vector[1] / 180.0 * 3.1415)) / 2.0;
+            jujiVectorX = (sin(Vector[0] / 180.0 * 3.1415) + sin(Vector[2] / 180.0 * 3.1415)) / -2.0;
+            jujiVectorY = (cos(Vector[0] / 180.0 * 3.1415) + cos(Vector[2] / 180.0 * 3.1415)) / 2.0;
+        }else if((Vector[0] <= 60 || Vector[0] >= 300) && (120 <= Vector[2] && Vector[2] <= 240) && (120 <= Vector[2] && Vector[2] <= 240)){
+            //0が前で1,2が後ろ
+            VectorX = ((sin(Vector[1] / 180.0 * 3.1415) + sin(Vector[2] / 180.0 * 3.1415)) / 2.0 + sin(Vector[0] / 180.0 * 3.1415)) / -2.0;
+            VectorY = ((cos(Vector[1] / 180.0 * 3.1415) + cos(Vector[2] / 180.0 * 3.1415)) / 2.0 + cos(Vector[0] / 180.0 * 3.1415)) / 2.0;
+            jujiVectorX = (sin(Vector[1] / 180.0 * 3.1415) + sin(Vector[2] / 180.0 * 3.1415)) / -2.0;
+            jujiVectorY = (cos(Vector[1] / 180.0 * 3.1415) + cos(Vector[2] / 180.0 * 3.1415)) / 2.0;
+        }else if((Vector[2] <= 60 || Vector[2] >= 300) && (120 <= Vector[2] && Vector[2] <= 240) && (120 <= Vector[1] && Vector[1] <= 240)){
+            //2が前で0,1が後ろ
+            VectorX = ((sin(Vector[0] / 180.0 * 3.1415) + sin(Vector[1] / 180.0 * 3.1415)) / 2.0 + sin(Vector[2] / 180.0 * 3.1415)) / -2.0;
+            VectorY = ((cos(Vector[0] / 180.0 * 3.1415) + cos(Vector[1] / 180.0 * 3.1415)) / 2.0 + cos(Vector[2] / 180.0 * 3.1415)) / 2.0;
+            jujiVectorX = (sin(Vector[0] / 180.0 * 3.1415) + sin(Vector[1] / 180.0 * 3.1415)) / -2.0;
+            jujiVectorY = (cos(Vector[0] / 180.0 * 3.1415) + cos(Vector[1] / 180.0 * 3.1415)) / 2.0;
+        }else{
+            jujiAngle = 999.9;
+        }
+        if(jujiAngle < 999){
+            VectorAbsoluteValue = sqrt(VectorX * VectorX + VectorY * VectorY);
+            if(isFrontLine == true) result = atan2(VectorY,VectorX) / 3.1415 * -180 + 90;
+            else result = atan2(VectorY,VectorX) / 3.1415 * -180 + 90 - (180.0 / number);
+            if(isFrontLine == true) jujiAngle = atan2(jujiVectorY,jujiVectorX) / 3.1415 * -180 + 90;
+            else jujiAngle = atan2(jujiVectorY,jujiVectorX) / 3.1415 * -180 + 90 - (180.0 / number);
+            while(result < 0) result += 360.0;
+            while(result >= 360) result -= 360.0;
+            while(jujiAngle < 0) jujiAngle += 360.0;
+            while(jujiAngle >= 360) jujiAngle -= 360.0;
+            if(serialWatch == "lin"){
+                if(isUseDisplay){
+                    DrawLineOnDisplay(32+(int)(jujiVectorY * 29.0),32+(int)(jujiVectorX * 29.0),(int)(sqrt(1-(jujiVectorX * jujiVectorX + jujiVectorY * jujiVectorY)) * 29),(jujiAngle) / 180.0 * 3.1415 + 1.5708);
+                    DrawLineOnDisplay(32+(int)(jujiVectorY * 29.0),32+(int)(jujiVectorX * 29.0),(int)(sqrt(1-sqrt(jujiVectorX * jujiVectorX + jujiVectorY * jujiVectorY)) * 29),(jujiAngle + 180) / 180.0 * 3.1415 + 1.5708);
+                }else{
+                    printf(" jujiVector : %.2f ",jujiAngle);
+                }
+            }
+        }
+    }else if(VectorNumber == 4){
+        float jujiVectorX,jujiVectorY;
+        if(Vector[0] <= 45 || Vector[0] > 315){
+            //Vector[0]と[2]が縦方向
+            VectorX = (sin(Vector[0] / 180.0 * 3.1415) + sin(Vector[2] / 180.0 * 3.1415)) / -2.0;
+            VectorY = (cos(Vector[0] / 180.0 * 3.1415) + cos(Vector[2] / 180.0 * 3.1415)) / 2.0;
+            jujiVectorX = (sin(Vector[1] / 180.0 * 3.1415) + sin(Vector[3] / 180.0 * 3.1415)) / -2.0;
+            jujiVectorY = (cos(Vector[1] / 180.0 * 3.1415) + cos(Vector[3] / 180.0 * 3.1415)) / 2.0;
+        }else{
+            //Vector[1]と[3]が縦方向
+            VectorX = (sin(Vector[1] / 180.0 * 3.1415) + sin(Vector[3] / 180.0 * 3.1415)) / -2.0;
+            VectorY = (cos(Vector[1] / 180.0 * 3.1415) + cos(Vector[3] / 180.0 * 3.1415)) / 2.0;
+            jujiVectorX = (sin(Vector[0] / 180.0 * 3.1415) + sin(Vector[2] / 180.0 * 3.1415)) / -2.0;
+            jujiVectorY = (cos(Vector[0] / 180.0 * 3.1415) + cos(Vector[2] / 180.0 * 3.1415)) / 2.0;
+        }
+        VectorAbsoluteValue = sqrt(VectorX * VectorX + VectorY * VectorY);
+        if(isFrontLine == true) result = atan2(VectorY,VectorX) / 3.1415 * -180 + 90;
+        else result = atan2(VectorY,VectorX) / 3.1415 * -180 + 90 - (180.0 / number);
+        if(isFrontLine == true) jujiAngle = atan2(jujiVectorY,jujiVectorX) / 3.1415 * -180 + 90;
+        else jujiAngle = atan2(jujiVectorY,jujiVectorX) / 3.1415 * -180 + 90 - (180.0 / number);
+        while(result < 0) result += 360.0;
+        while(result >= 360) result -= 360.0;
+        while(jujiAngle < 0) jujiAngle += 360.0;
+        while(jujiAngle >= 360) jujiAngle -= 360.0;
+        if(serialWatch == "lin"){
+            if(isUseDisplay){
+                // snprintf(displayBuffer,displayBufferSize,"%.2f",jujiAngle);
+                // WriteTextOnDisplay(64,60,displayBuffer,10,false,false);
+                DrawLineOnDisplay(32+(int)(jujiVectorY * 29.0),32+(int)(jujiVectorX * 29.0),(int)(sqrt(1-(jujiVectorX * jujiVectorX + jujiVectorY * jujiVectorY)) * 29),(jujiAngle) / 180.0 * 3.1415 + 1.5708);
+                DrawLineOnDisplay(32+(int)(jujiVectorY * 29.0),32+(int)(jujiVectorX * 29.0),(int)(sqrt(1-sqrt(jujiVectorX * jujiVectorX + jujiVectorY * jujiVectorY)) * 29),(jujiAngle + 180) / 180.0 * 3.1415 + 1.5708);
+            }else{
+                printf(" jujiVector : %.2f ",jujiAngle);
+            }
+        }
+    }
+  }else{
+    jujiAngle = 999.9;
+  }
+
   if(serialWatch == "lin"){
     if(isUseDisplay){
         snprintf(displayBuffer,displayBufferSize,"%.2f",result);
@@ -489,8 +583,8 @@ float GetCircleLineVector(int number,bool isFrontLine){
         if(result > 999){
             DrawLineOnDisplay(7,32,50,0.0);
         }else if(result != -999.9){
-            DrawLineOnDisplay(32+(int)(VectorY * 32.0),32+(int)(VectorX * 32.0),(int)((1-VectorAbsoluteValue) * 30),(result) / 180.0 * 3.1415 + 1.5708);
-            DrawLineOnDisplay(32+(int)(VectorY * 32.0),32+(int)(VectorX * 32.0),(int)((1-VectorAbsoluteValue) * 30),(result + 180) / 180.0 * 3.1415 + 1.5708);
+            DrawLineOnDisplay(32+(int)(VectorY * 29.0),32+(int)(VectorX * 29.0),(int)(sqrt(1-VectorAbsoluteValue * VectorAbsoluteValue) * 29),(result) / 180.0 * 3.1415 + 1.5708);
+            DrawLineOnDisplay(32+(int)(VectorY * 29.0),32+(int)(VectorX * 29.0),(int)(sqrt(1-VectorAbsoluteValue * VectorAbsoluteValue) * 29),(result + 180) / 180.0 * 3.1415 + 1.5708);
         }
     }else{
         printf(" vector : %.2f ",result);
