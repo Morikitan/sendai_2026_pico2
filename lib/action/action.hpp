@@ -13,7 +13,7 @@ void NewLineTrace();
 void CatchPetBottle();
 void CatchBall();
 void CatchCan();
-void ThrowCan();
+void TrashCan();
 void UseAllSensor();
 float GetCircleLineVector(int number,bool isFrontLine);
 

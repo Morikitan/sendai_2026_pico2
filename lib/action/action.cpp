@@ -312,6 +312,23 @@ void CatchCan(){
     }
 }
 
+void TrashCan(){
+    RotationToAngle(90);
+    MainMotorState(-200,-200);
+    GetDataFromLineToMain();
+    sleep_ms(500);
+    while(!circleLineSensor[7] && !circleLineSensor[12]){
+        sleep_ms(10);
+        GetDataFromLineToMain();
+    }
+    MainMotorState(0,0);
+    SetStepperSleep();
+    SetServoAngleFromMain(servo_sentor_basket_pin,90);
+    sleep_ms(1000);
+    SetServoAngleFromMain(servo_sentor_basket_pin,160);
+    SetStepperON();    
+}
+
 void CatchPetBottle(){
     //ペットボトルを探す挙動
     SetServoAngleFromMain(servo_arm_left_and_right_pin,90);
