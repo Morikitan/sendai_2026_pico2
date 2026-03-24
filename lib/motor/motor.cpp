@@ -55,6 +55,10 @@ void StepperSetup(){
 // gpio : stepper_left_clock_pinかstepper_right_clock_pin
 // freq_hz : 速さの変数。500までは回る
 void SetStepperSpeed(unsigned int slice_num, unsigned int gpio, float freq_hz){
+    if(freq_hz == 0){
+        pwm_set_enabled(slice_num,false);
+        return;
+    }
     const uint wrap = 10000;                // 解像度
     float clkdiv = 150000000 / (freq_hz * wrap);
     if (clkdiv > 255.0f) clkdiv = 255.0f;
@@ -63,9 +67,6 @@ void SetStepperSpeed(unsigned int slice_num, unsigned int gpio, float freq_hz){
     pwm_set_wrap(slice_num, wrap);
     pwm_set_chan_level(slice_num, pwm_gpio_to_channel(gpio), wrap / 2);
     pwm_set_enabled(slice_num, true);
-    if(freq_hz == 0){
-        pwm_set_enabled(slice_num,false);
-    }
 }
 
 //motor 左なら1 右なら2

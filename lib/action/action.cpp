@@ -323,7 +323,7 @@ void TrashCan(){
     }
     MainMotorState(0,0);
     SetStepperSleep();
-    SetServoAngleFromMain(servo_sentor_basket_pin,90);
+    SetServoAngleFromMain(servo_sentor_basket_pin,80);
     sleep_ms(1000);
     SetServoAngleFromMain(servo_sentor_basket_pin,160);
     SetStepperON();    
