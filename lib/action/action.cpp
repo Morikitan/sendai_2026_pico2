@@ -16,15 +16,23 @@
 
 int lineNumber;
 int preLineAngle;
-int lineAngle;
+int lineAngle;//0,90,180,270が入る本来、車体が直線上であるべき角度
 int lastLineTime; //ミリ秒
 bool isLineBuzzerOn;
-float lineVector;
+float circleLineAngle;//実際の線の角度1
+
+//GetCircleLineVectorの変数
+float result;
+int VectorNumber;
+float VectorAbsoluteValue;
+float jujiAngle;
 
 #define RightCircleLine circleLineSensor[11] + circleLineSensor[12] + circleLineSensor[13] + circleLineSensor[14] + circleLineSensor[15] + circleLineSensor[16] + circleLineSensor[17] + circleLineSensor[18] + circleLineSensor[19]
 #define LeftCircleLine circleLineSensor[1] + circleLineSensor[2] + circleLineSensor[3] + circleLineSensor[4] + circleLineSensor[5] + circleLineSensor[6] + circleLineSensor[7] + circleLineSensor[8] + circleLineSensor[9]
 #define RightFrontCircleLine circleLineSensor[16] + circleLineSensor[17] + circleLineSensor[18]
 #define LeftFrontCircleLine circleLineSensor[2] + circleLineSensor[3] + circleLineSensor[4]
+
+#define speed 20
 
 void LineTraceSetup(){
     lineNumber = 0;
@@ -50,32 +58,41 @@ void BuzzerRing(int times, int length){
 }
 
 void MainMove(){
-    if(lineNumber < 4){
-        NewLineTrace();
-    }else if(lineNumber < 5){
-        while(preLineAngle != 90){
-            NewLineTrace();
-        }
-        RotationToAngle(90);
-        gpio_put(buzzer_pin,0);
-        uint32_t now = time_us_32();
-        while(!gpio_get(touch_sensor_front_left_pin)){
-            if(angleX < 89.5){
-                MainMotorState(400,395);
-            }else if(angleX > 90.5){
-                MainMotorState(395,400);
-            }else{
-                MainMotorState(400,400);
-            }
-            GetGyroAngleFromSub();
-        }
-        GetDataFromLineToMain();
-        while(!circleLineSensor[15]){
-            MainMotorState(-200,-200);
+    sleep_ms(500);
+    uint32_t firstTime = time_us_32();
+    if(lineNumber == 0 || lineNumber == 1){
+        do{
             GetDataFromLineToMain();
-        }
-        MainMotorState(200,200);
+            GetGyroAngleFromSub();
+            if(angleX > 180) angleX -= 360;
+            if((time_us_32() - firstTime) / 2000 > 400){
+                MainMotorState(400 - (int)(angleX * 10),400 + (int)(angleX * 10));
+            }else{
+                MainMotorState((int)(time_us_32() - firstTime) / 2000 - (int)(angleX * 10),(int)(time_us_32() - firstTime) / 2000 + (int)(angleX * 10));
+            }
+            
+        }while(RightFrontCircleLine == 0 || LeftFrontCircleLine == 0);
+        do{
+            GetDataFromLineToMain();
+            GetGyroAngleFromSub();
+            if(angleX > 180) angleX -= 360;
+            if((time_us_32() - firstTime) / 2000 > 400){
+                MainMotorState(400 - (int)(angleX * 10),400 + (int)(angleX * 10));
+            }else{
+                MainMotorState((int)(time_us_32() - firstTime) / 2000 - (int)(angleX * 10),(int)(time_us_32() - firstTime) / 2000 + (int)(angleX * 10));
+            }
+        }while(RightFrontCircleLine > 0 || LeftFrontCircleLine > 0);
+        gpio_put(buzzer_pin,1);
         sleep_ms(200);
+        gpio_put(buzzer_pin,0);
+        lineNumber++;
+    }else if(lineNumber < 5){
+        NewLineTrace();
+    }else if(lineNumber < 6){
+        MainMotorState(0,0);
+        gpio_put(buzzer_pin,1);
+        sleep_ms(500);
+        gpio_put(buzzer_pin,0);
         RotationToAngle(180);
         while(!gpio_get(touch_sensor_back_left_pin)){
             MainMotorState(-200,-200);
@@ -151,23 +168,39 @@ void LineTrace(){
 void NewLineTrace(){
     GetDataFromLineToMain();
     GetGyroAngleFromSub();
-    GetCircleLineVector(20,true,true);
-    if(RightFrontCircleLine > 0 && LeftFrontCircleLine > 0){
+    circleLineAngle = GetCircleLineVector(20,true,true);
+    if(VectorNumber == 4){
         //十字の感知
-        if(time_us_32() / 1000 > lastLineTime + 1000){
+        if(time_us_32() / 1000 > lastLineTime + 10000){
             gpio_put(buzzer_pin,1);
             lineNumber++;
             isLineBuzzerOn = true;
             lastLineTime = time_us_32() / 1000;
         }
-    }else if(RightCircleLine > 0 && LeftCircleLine == 0){
+    }
+    if(90 < circleLineAngle && circleLineAngle < 180){
         //右に曲がる
-        MainMotorState(250,-125);
-    }else if(RightCircleLine == 0 && LeftCircleLine > 0){
+        MainMotorState((int)(12.5 * speed),-(int)(6.25 * speed));
+    }else if(180 < circleLineAngle && circleLineAngle < 270){
         //左に曲がる
-        MainMotorState(-125,250);
+        MainMotorState(-(int)(6.25 * speed),(int)(12.5 * speed));
+    }else if(VectorAbsoluteValue > 0.4){
+        if((85 < circleLineAngle && circleLineAngle < 90) || 285 < circleLineAngle ){
+            //右に曲がる
+            MainMotorState((int)(6.25 * speed),-(int)(6.25 * speed));
+        }else if(circleLineAngle < 75 || (270 < circleLineAngle && circleLineAngle < 275)){
+            //左に曲がる
+            MainMotorState(-(int)(6.25 * speed),(int)(6.25 * speed));
+        }else{
+            MainMotorState((int)(10 * speed),(int)(10 * speed));
+        }
     }else{
-        MainMotorState(400,400);
+        if(lineAngle == 0 && angleX > 180){
+            MainMotorState((int)((10 - (angleX - 360) * 0.25) * speed),(int)((10 + (angleX - 360) * 0.25) * speed));
+        }else{
+            MainMotorState((int)((10 - (angleX - lineAngle) * 0.25) * speed),(int)((10 + (angleX - lineAngle) * 0.25) * speed));
+        }
+        
     }
     if(isLineBuzzerOn){
         if(time_us_32() / 1000 > lastLineTime + 500){
@@ -193,8 +226,10 @@ void NewLineTrace(){
         }else if(lineAngle == 270 && preLineAngle == 0 && (180 < angleX && angleX < 275)){
             preLineAngle = lineAngle;
         }
+        if(lineNumber == 4){
+            lineNumber++;
+        }
     }
-    sleep_ms(1);
 }
 
 void RotationToAngle(int target_angle){
@@ -220,7 +255,7 @@ void RotationToAngle(int target_angle){
         }else if(rotation_angle >= 180){
             MainMotorState(-150,150);
         }
-        sleep_ms(5);
+        sleep_ms(1);
     }
     MainMotorState(0,0);
 }
@@ -392,10 +427,6 @@ void UseAllSensor(){
     GetCurrentFromSub();
 }
 
-float result;
-int VectorNumber;
-float VectorAbsoluteValue;
-float jujiAngle;
 //円形ラインセンサのベクトルの和の向きを計算する
 //number : ラインセンサの数
 //isFrontLine : 真正面0°にラインセンサがあるのか
@@ -480,6 +511,7 @@ float GetCircleLineVector(int number,bool isFrontLine,bool isGetJuji){
   if(VectorX == 999 && VectorY == 999){
     //ラインがない
     result = -999.9;
+    VectorAbsoluteValue = 0.0;
   }
   if((VectorNumber == 2 && Vector[0] == 0.0 && Vector[1] == 180.0) || (VectorNumber == 1 && Vector[0] == 0) || (VectorNumber == 1 && Vector[0] == 180)){
     //直線上
@@ -491,32 +523,45 @@ float GetCircleLineVector(int number,bool isFrontLine,bool isGetJuji){
     if(VectorNumber == 3){
         float jujiVectorX,jujiVectorY;
         jujiAngle = 0;
+        float comVector;
         if((Vector[0] <= 60 || Vector[0] >= 300) && (Vector[1] <= 60 || Vector[1] >= 300) && (120 <= Vector[2] && Vector[2] <= 240)){
             //0,1が前で2が後ろ
-            VectorX = ((sin(Vector[0] / 180.0 * 3.1415) + sin(Vector[1] / 180.0 * 3.1415)) / 2.0 + sin(Vector[2] / 180.0 * 3.1415)) / -2.0;
-            VectorY = ((cos(Vector[0] / 180.0 * 3.1415) + cos(Vector[1] / 180.0 * 3.1415)) / 2.0 + cos(Vector[2] / 180.0 * 3.1415)) / 2.0;
+            if(Vector[0] > 180) comVector = (Vector[0] - 360.0 + Vector[1])/2.0;
+            else comVector = (Vector[0] + Vector[1])/2.0;
+            VectorX = (sin(comVector / 180.0 * 3.1415) + sin(Vector[2] / 180.0 * 3.1415)) / -2.0;
+            VectorY = (cos(comVector / 180.0 * 3.1415) + cos(Vector[2] / 180.0 * 3.1415)) / 2.0;
             jujiVectorX = (sin(Vector[0] / 180.0 * 3.1415) + sin(Vector[1] / 180.0 * 3.1415)) / -2.0;
             jujiVectorY = (cos(Vector[0] / 180.0 * 3.1415) + cos(Vector[1] / 180.0 * 3.1415)) / 2.0;
         }else if((Vector[0] <= 60 || Vector[0] >= 300) && (Vector[2] <= 60 || Vector[2] >= 300) && (120 <= Vector[1] && Vector[1] <= 240)){
             //0,2が前で1が後ろ
-            VectorX = ((sin(Vector[0] / 180.0 * 3.1415) + sin(Vector[2] / 180.0 * 3.1415)) / 2.0 + sin(Vector[1] / 180.0 * 3.1415)) / -2.0;
-            VectorY = ((cos(Vector[0] / 180.0 * 3.1415) + cos(Vector[2] / 180.0 * 3.1415)) / 2.0 + cos(Vector[1] / 180.0 * 3.1415)) / 2.0;
+            if(Vector[0] > 180) comVector = (Vector[0] - 360.0 + Vector[2] - 360.0)/2.0;
+            else comVector = (Vector[0] + Vector[2] - 360.0)/2.0;
+            VectorX = (sin(comVector / 180.0 * 3.1415) + sin(Vector[1] / 180.0 * 3.1415)) / -2.0;
+            VectorY = (cos(comVector / 180.0 * 3.1415) + cos(Vector[1] / 180.0 * 3.1415)) / 2.0;
             jujiVectorX = (sin(Vector[0] / 180.0 * 3.1415) + sin(Vector[2] / 180.0 * 3.1415)) / -2.0;
             jujiVectorY = (cos(Vector[0] / 180.0 * 3.1415) + cos(Vector[2] / 180.0 * 3.1415)) / 2.0;
-        }else if((Vector[0] <= 60 || Vector[0] >= 300) && (120 <= Vector[2] && Vector[2] <= 240) && (120 <= Vector[2] && Vector[2] <= 240)){
+        }else if((Vector[0] <= 60 || Vector[0] >= 300) && (120 <= Vector[2] && Vector[2] <= 240) && (120 <= Vector[1] && Vector[1] <= 240)){
             //0が前で1,2が後ろ
-            VectorX = ((sin(Vector[1] / 180.0 * 3.1415) + sin(Vector[2] / 180.0 * 3.1415)) / 2.0 + sin(Vector[0] / 180.0 * 3.1415)) / -2.0;
-            VectorY = ((cos(Vector[1] / 180.0 * 3.1415) + cos(Vector[2] / 180.0 * 3.1415)) / 2.0 + cos(Vector[0] / 180.0 * 3.1415)) / 2.0;
+            comVector = (Vector[1] + Vector[2])/2.0;
+            VectorX = (sin(comVector / 180.0 * 3.1415) + sin(Vector[0] / 180.0 * 3.1415)) / -2.0;
+            VectorY = (cos(comVector / 180.0 * 3.1415) + cos(Vector[0] / 180.0 * 3.1415)) / 2.0;
             jujiVectorX = (sin(Vector[1] / 180.0 * 3.1415) + sin(Vector[2] / 180.0 * 3.1415)) / -2.0;
             jujiVectorY = (cos(Vector[1] / 180.0 * 3.1415) + cos(Vector[2] / 180.0 * 3.1415)) / 2.0;
-        }else if((Vector[2] <= 60 || Vector[2] >= 300) && (120 <= Vector[2] && Vector[2] <= 240) && (120 <= Vector[1] && Vector[1] <= 240)){
+        }else if((Vector[2] <= 60 || Vector[2] >= 300) && (120 <= Vector[0] && Vector[0] <= 240) && (120 <= Vector[1] && Vector[1] <= 240)){
             //2が前で0,1が後ろ
-            VectorX = ((sin(Vector[0] / 180.0 * 3.1415) + sin(Vector[1] / 180.0 * 3.1415)) / 2.0 + sin(Vector[2] / 180.0 * 3.1415)) / -2.0;
-            VectorY = ((cos(Vector[0] / 180.0 * 3.1415) + cos(Vector[1] / 180.0 * 3.1415)) / 2.0 + cos(Vector[2] / 180.0 * 3.1415)) / 2.0;
+            comVector = (Vector[1] + Vector[0])/2.0;
+            VectorX = (sin(comVector / 180.0 * 3.1415) + sin(Vector[2] / 180.0 * 3.1415)) / -2.0;
+            VectorY = (cos(comVector / 180.0 * 3.1415) + cos(Vector[2] / 180.0 * 3.1415)) / 2.0;
             jujiVectorX = (sin(Vector[0] / 180.0 * 3.1415) + sin(Vector[1] / 180.0 * 3.1415)) / -2.0;
             jujiVectorY = (cos(Vector[0] / 180.0 * 3.1415) + cos(Vector[1] / 180.0 * 3.1415)) / 2.0;
         }else{
             jujiAngle = 999.9;
+        }
+        if(serialWatch == "oth"){
+            snprintf(displayBuffer,displayBufferSize,"%.2f",VectorX);
+            WriteTextOnDisplay(5,30,displayBuffer,8,false,false);
+            snprintf(displayBuffer,displayBufferSize,"%.2f",VectorY);
+            WriteTextOnDisplay(5,40,displayBuffer,8,false,false);
         }
         if(jujiAngle < 999){
             VectorAbsoluteValue = sqrt(VectorX * VectorX + VectorY * VectorY);
