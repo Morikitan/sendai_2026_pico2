@@ -32,7 +32,7 @@ float jujiAngle;
 #define RightFrontCircleLine circleLineSensor[16] + circleLineSensor[17] + circleLineSensor[18]
 #define LeftFrontCircleLine circleLineSensor[2] + circleLineSensor[3] + circleLineSensor[4]
 
-#define speed 20
+#define speed 2
 
 void LineTraceSetup(){
     lineNumber = 0;
@@ -57,10 +57,10 @@ void BuzzerRing(int times, int length){
     }    
 }
 
+uint32_t firstTime;
 void MainMove(){
-    sleep_ms(500);
-    uint32_t firstTime = time_us_32();
     if(lineNumber == 0 || lineNumber == 1){
+        if(lineNumber == 0) firstTime = time_us_32();
         do{
             GetDataFromLineToMain();
             GetGyroAngleFromSub();
@@ -200,7 +200,6 @@ void NewLineTrace(){
         }else{
             MainMotorState((int)((10 - (angleX - lineAngle) * 0.25) * speed),(int)((10 + (angleX - lineAngle) * 0.25) * speed));
         }
-        
     }
     if(isLineBuzzerOn){
         if(time_us_32() / 1000 > lastLineTime + 500){
@@ -558,10 +557,12 @@ float GetCircleLineVector(int number,bool isFrontLine,bool isGetJuji){
             jujiAngle = 999.9;
         }
         if(serialWatch == "oth"){
-            snprintf(displayBuffer,displayBufferSize,"%.2f",VectorX);
+            snprintf(displayBuffer,displayBufferSize,"%.1f %.1f %.1f",Vector[0],Vector[1],Vector[2]);
             WriteTextOnDisplay(5,30,displayBuffer,8,false,false);
-            snprintf(displayBuffer,displayBufferSize,"%.2f",VectorY);
+            snprintf(displayBuffer,displayBufferSize,"%.2f",VectorX);
             WriteTextOnDisplay(5,40,displayBuffer,8,false,false);
+            snprintf(displayBuffer,displayBufferSize,"%.2f",VectorY);
+            WriteTextOnDisplay(5,50,displayBuffer,8,false,false);
         }
         if(jujiAngle < 999){
             VectorAbsoluteValue = sqrt(VectorX * VectorX + VectorY * VectorY);
@@ -625,6 +626,8 @@ float GetCircleLineVector(int number,bool isFrontLine,bool isGetJuji){
     if(isUseDisplay){
         snprintf(displayBuffer,displayBufferSize,"%.2f",result);
         WriteTextOnDisplay(64,60,displayBuffer,10,false,false);
+        snprintf(displayBuffer,displayBufferSize,"%.2f",VectorAbsoluteValue);
+        WriteTextOnDisplay(90,38,displayBuffer,10,false,false);
         if(result > 999){
             DrawLineOnDisplay(7,32,50,0.0);
         }else if(result != -999.9){

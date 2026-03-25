@@ -39,6 +39,7 @@ int main(){
             TrashfromBasket(3);
         }else if(gpio_get(tactile_switch_pin3) == true){
             SetStepperON();
+            sleep_ms(500);
             while(true){
                 PrintDisplayMode();
                 MainMove();
@@ -49,6 +50,5 @@ int main(){
         UseAllSensor();
         GetCircleLineVector(20,true,true);
         SendBufferToDisplay();
-        sleep_ms(100);
     }
 }
