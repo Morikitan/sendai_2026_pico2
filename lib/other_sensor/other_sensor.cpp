@@ -18,6 +18,7 @@ void ColorSensorSetup(){
     gpio_set_function(color_sensor_SDA_pin, GPIO_FUNC_I2C);
     gpio_init(color_sensor_LED_pin);
     gpio_set_dir(color_sensor_LED_pin, GPIO_OUT);
+    gpio_put(color_sensor_LED_pin,1);
     canNumber = 0;
     // 固定時間モード / Lowゲイン / 22.4ms
     // bit7=0 bit6=0 bit3=0 bit2=0 bit1,0=10
@@ -73,14 +74,12 @@ bool read_registers(uint8_t start_reg, uint8_t *dest, size_t len){
 //戻り値は　-1:I2Cエラー,0:その他,1:赤ボール,2:青ボール,3:缶
 int UseColorSensor(){
     //カラーセンサー用LEDの点灯
-    gpio_put(color_sensor_LED_pin,1);
-    sleep_ms(100);
     //データの読み出し
     uint8_t data[8];
     if (!read_registers(REG_DATA_RED_H, data, 8)) {
         printf("I2C error\n");
         //エラー時はLEDを消灯
-        gpio_put(color_sensor_LED_pin,0);
+        // gpio_put(color_sensor_LED_pin,0);
         return 255;
     }
     uint16_t red    = (data[0] << 8) | data[1];
@@ -104,7 +103,7 @@ int UseColorSensor(){
     }
     printf("Object:%d\n",object);
     //LEDの消灯
-    gpio_put(color_sensor_LED_pin,0);
+    // gpio_put(color_sensor_LED_pin,0);
     return object;
 }
 
