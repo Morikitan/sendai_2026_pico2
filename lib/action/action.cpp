@@ -93,6 +93,14 @@ void MainMove(){
         sleep_ms(200);
         gpio_put(buzzer_pin,0);
         lineNumber++;
+        if(lineNumber == 2){
+            firstTime = time_us_32();
+            while((time_us_32() - firstTime) / 1000 > 750){
+                PrintDisplayMode();
+                StraightLineTrace(0);
+                SendBufferToDisplay();
+            }
+        }
     }else if(lineNumber < 4){
         NewLineTrace();
     }else if(lineNumber < 5){
@@ -238,7 +246,7 @@ void NewLineTrace(){
     GetDataFromLineToMain();
     GetGyroAngleFromSub();
     circleLineAngle = GetCircleLineVector(20,true,true);
-    if(VectorNumber == 4){
+    if(VectorNumber == 4 || TjiAngle < 999){
         //十字の感知
         if(time_us_32() / 1000 > lastLineTime + 40000 / speed){
             gpio_put(buzzer_pin,1);
@@ -302,7 +310,7 @@ void BackLineTrace(){
     GetDataFromLineToMain();
     GetGyroAngleFromSub();
     circleLineAngle = GetCircleLineVector(20,true,true);
-    if(VectorNumber == 4){
+    if(VectorNumber == 4 || TjiAngle < 999){
         //十字の感知
         if(time_us_32() / 1000 > lastLineTime + 40000 / speed){
             gpio_put(buzzer_pin,1);
