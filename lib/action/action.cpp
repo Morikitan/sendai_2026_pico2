@@ -33,7 +33,7 @@ float TjiAngle;
 #define RightFrontCircleLine circleLineSensor[16] + circleLineSensor[17] + circleLineSensor[18]
 #define LeftFrontCircleLine circleLineSensor[2] + circleLineSensor[3] + circleLineSensor[4]
 
-#define speed 20
+int speed;
 
 void LineTraceSetup(){
     lineNumber = 0;
@@ -42,6 +42,7 @@ void LineTraceSetup(){
     lastLineTime = 0;
     jujiAngle = 0;
     TjiAngle = 0;
+    speed = 30;
 }
 
 //ブザーを鳴らす　count:回数　length:0で短1で長
@@ -92,28 +93,85 @@ void MainMove(){
         sleep_ms(200);
         gpio_put(buzzer_pin,0);
         lineNumber++;
-    }else if(lineNumber < 5){
+    }else if(lineNumber < 4){
         NewLineTrace();
+    }else if(lineNumber < 5){
+        if(time_us_32() / 1000 < lastLineTime + 40000 / speed){
+            NewLineTrace();
+        }else{
+            StraightLineTrace(90);
+            if(circleLineAngle < -999){
+                lineNumber = 5;
+            }
+        }
     }else if(lineNumber < 6){
         MainMotorState(0,0);
         gpio_put(buzzer_pin,1);
         sleep_ms(500);
         gpio_put(buzzer_pin,0);
         RotationToAngle(180);
+        firstTime = time_us_32() / 1000;
         while(!gpio_get(touch_sensor_back_left_pin)){
-            if((time_us_32() - firstTime) / 2000 > 400){
+            PrintDisplayMode();
+            GetGyroAngleFromSub();
+            if((time_us_32() - firstTime) / 2000 > 200){
                 MainMotorState(- 200 - (int)((angleX - 180) * 10),- 200 + (int)((angleX - 180) * 10));
             }else{
                 MainMotorState((int)(time_us_32() - firstTime) / -2000 - (int)((angleX - 180) * 10),(int)(time_us_32() - firstTime) / -2000 + (int)((angleX - 180) * 10));
             }
+            SendBufferToDisplay();
         }
         MainMotorState(0,0);
-        SetStepperOff(1);
-        SetStepperOff(2);
-        sleep_ms(100000000);
+        //ボールと缶を合わせて4つとって線上に復帰する
+        CatchPetBottle();
+        BackToLine();
+        lineNumber++;
+        preLineAngle = 180;
+        lineAngle = 180;
+        sleep_ms(500);
+    }else if(lineNumber < 8){
+        BackLineTrace();
+    }else if(lineNumber < 9){
+        MainMotorState(0,0);
+        gpio_put(buzzer_pin,1);
+        sleep_ms(500);
+        gpio_put(buzzer_pin,0);
+        TrashfromBasket(2);
+        lineNumber++;
+        preLineAngle = 90;
+        lineAngle = 90;
+        sleep_ms(500);
+        lastLineTime = time_us_32() / 1000;
+    }else if(lineNumber < 10){
+        BackLineTrace();
+    }else if(lineNumber < 11){
+        MainMotorState(0,0);
+        gpio_put(buzzer_pin,1);
+        sleep_ms(500);
+        gpio_put(buzzer_pin,0);
+        TrashfromBasket(3);
+        lineNumber++;
+        preLineAngle = 180;
+        lineAngle = 180;
+        sleep_ms(500);
+        lastLineTime = time_us_32() / 1000;
+    }else if(lineNumber < 12){
+        NewLineTrace();
+    }else if(lineNumber < 13){
+        MainMotorState(0,0);
+        gpio_put(buzzer_pin,1);
+        sleep_ms(500);
+        gpio_put(buzzer_pin,0);
+        TrashfromBasket(1);
+        lineNumber++;
+        preLineAngle = 0;
+        lineAngle = 0;
+    }else if(lineNumber < 14){
+        MainMotorState(0,0);
     }
 }
 
+/*
 void LineTrace(){
     GetDataFromLineToMain();
     GetGyroAngleFromSub();
@@ -173,6 +231,7 @@ void LineTrace(){
     }
     sleep_ms(1);
 }
+*/
 
 //円形ラインセンサを使ったライントレース
 void NewLineTrace(){
@@ -195,6 +254,7 @@ void NewLineTrace(){
         //左に曲がる
         MainMotorState(-(int)(6.25 * speed),(int)(12.5 * speed));
     }else if(VectorAbsoluteValue > 0.4){
+        //個々の角度設定が90 - x の関係で間違っている可能性
         if((85 < circleLineAngle && circleLineAngle < 90) || 285 < circleLineAngle ){
             //右に曲がる
             MainMotorState((int)(6.25 * speed),-(int)(6.25 * speed));
@@ -228,15 +288,141 @@ void NewLineTrace(){
     if(lineAngle != preLineAngle){
         if(lineAngle == preLineAngle + 90 && lineAngle - 5 < angleX){
             preLineAngle = lineAngle;
-            if(lineNumber == 4){
-            lineNumber++;
-            }
         }else if(lineAngle == 0 && preLineAngle == 270 && (355 < angleX || angleX < 180)){
             preLineAngle = lineAngle;
         }else if(lineAngle == preLineAngle - 90 && (angleX < lineAngle + 5 || (lineAngle = 0 && angleX > 180))){
             preLineAngle = lineAngle;
         }else if(lineAngle == 270 && preLineAngle == 0 && (180 < angleX && angleX < 275)){
             preLineAngle = lineAngle;
+        }
+    }
+}
+
+void BackLineTrace(){
+    GetDataFromLineToMain();
+    GetGyroAngleFromSub();
+    circleLineAngle = GetCircleLineVector(20,true,true);
+    if(VectorNumber == 4){
+        //十字の感知
+        if(time_us_32() / 1000 > lastLineTime + 40000 / speed){
+            gpio_put(buzzer_pin,1);
+            lineNumber++;
+            isLineBuzzerOn = true;
+            lastLineTime = time_us_32() / 1000;
+        }
+    }
+    if(270 < circleLineAngle && circleLineAngle < 360){
+        //右に曲がる
+        MainMotorState((int)(6.25 * speed),-(int)(12.5 * speed));
+    }else if(0 < circleLineAngle && circleLineAngle < 90){
+        //左に曲がる
+        MainMotorState(-(int)(12.5 * speed),(int)(6.25 * speed));
+    }else if(VectorAbsoluteValue > 0.4){
+        if((265 < circleLineAngle && circleLineAngle < 270) || (105 < circleLineAngle && circleLineAngle < 180)){
+            //右に曲がる
+            MainMotorState((int)(6.25 * speed),-(int)(6.25 * speed));
+        }else if((180 < circleLineAngle && circleLineAngle < 255) || (90 < circleLineAngle && circleLineAngle < 95)){
+            //左に曲がる
+            MainMotorState(-(int)(6.25 * speed),(int)(6.25 * speed));
+        }else{
+            MainMotorState(-(int)(10 * speed),-(int)(10 * speed));
+        }
+    }else{
+        if(lineAngle == 0 && angleX > 180){
+            MainMotorState((int)((-10 - (angleX - 360) * 0.25) * speed),(int)((-10 + (angleX - 360) * 0.25) * speed));
+        }else{
+            MainMotorState((int)((-10 - (angleX - lineAngle) * 0.25) * speed),(int)((-10 + (angleX - lineAngle) * 0.25) * speed));
+        }
+    }
+    if(isLineBuzzerOn){
+        if(time_us_32() / 1000 > lastLineTime + 500){
+            gpio_put(buzzer_pin,0);
+        }
+    }
+    //lineAngleの設定
+    if((lineAngle == 0 && (20 < angleX && angleX <= 180)) || (lineAngle != 0 && angleX > lineAngle + 20)){
+        if(lineAngle == 270)lineAngle = 0;
+        else lineAngle += 90;
+    }else if((lineAngle == 0 && (180 <= angleX && angleX < 340)) || (lineAngle != 0 && angleX < lineAngle - 20)){
+        if(lineAngle == 0)lineAngle = 270;
+        else lineAngle -= 90;
+    }
+    //preLineAngleの設定
+    if(lineAngle != preLineAngle){
+        if(lineAngle == preLineAngle + 90 && lineAngle - 5 < angleX){
+            preLineAngle = lineAngle;
+        }else if(lineAngle == 0 && preLineAngle == 270 && (355 < angleX || angleX < 180)){
+            preLineAngle = lineAngle;
+        }else if(lineAngle == preLineAngle - 90 && (angleX < lineAngle + 5 || (lineAngle = 0 && angleX > 180))){
+            preLineAngle = lineAngle;
+        }else if(lineAngle == 270 && preLineAngle == 0 && (180 < angleX && angleX < 275)){
+            preLineAngle = lineAngle;
+        }
+    }
+}
+
+//ボールや缶を取った後、線に復帰するプログラム
+void BackToLine(){
+    GetGyroAngleFromSub();
+    int backAngle;
+    if(0 <= angleX && angleX < 180){
+        //左側にいる
+        RotationToAngle(90);
+        backAngle = 90;
+    }else {
+        //右側にいる
+        RotationToAngle(270);
+        backAngle = 270;
+    }
+    sleep_ms(250);
+    GetDataFromLineToMain();
+    circleLineAngle = GetCircleLineVector(20,true,true);
+    firstTime = time_us_32();
+    while(circleLineAngle < -999 || VectorAbsoluteValue > 0.4){
+        PrintDisplayMode();
+        GetGyroAngleFromSub();
+        GetDataFromLineToMain();
+        circleLineAngle = GetCircleLineVector(20,true,true);
+        if((time_us_32() - firstTime) / 2000 > 200){
+            MainMotorState(- 200 - (int)((angleX - backAngle) * 10),- 200 + (int)((angleX - backAngle) * 10));
+        }else{
+            MainMotorState((int)(time_us_32() - firstTime) / -2000 - (int)((angleX - backAngle) * 10),(int)(time_us_32() - firstTime) / -2000 + (int)((angleX - backAngle) * 10));
+        }
+        SendBufferToDisplay();
+    }
+    MainMotorState(0,0);
+    sleep_ms(250);
+    RotationToAngle(180);
+    
+}
+
+//線に沿って前進するプログラム
+//angle : ジャイロで常に向いているべき角度
+void StraightLineTrace(int angle){
+    GetDataFromLineToMain();
+    GetGyroAngleFromSub();
+    circleLineAngle = GetCircleLineVector(20,true,true);
+    if(90 < circleLineAngle && circleLineAngle < 180 && (angleX - angle < -5 && angle != 0 || (180 < angleX && angleX < 355 && angle == 0))){
+        //右に曲がる
+        MainMotorState((int)(12.5 * speed),-(int)(6.25 * speed));
+    }else if(180 < circleLineAngle && circleLineAngle < 270 && angleX - angle > 5){
+        //左に曲がる
+        MainMotorState(-(int)(6.25 * speed),(int)(12.5 * speed));
+    }else if(VectorAbsoluteValue > 0.4){
+        if((85 < circleLineAngle && circleLineAngle < 90) || 285 < circleLineAngle ){
+            //右に曲がる
+            MainMotorState((int)(6.25 * speed),-(int)(6.25 * speed));
+        }else if(circleLineAngle < 75 || (270 < circleLineAngle && circleLineAngle < 275)){
+            //左に曲がる
+            MainMotorState(-(int)(6.25 * speed),(int)(6.25 * speed));
+        }else{
+            MainMotorState((int)(10 * speed),(int)(10 * speed));
+        }
+    }else{
+        if(angle == 0 && angleX > 180){
+            MainMotorState((int)((10 - (angleX - 360) * 0.25) * speed),(int)((10 + (angleX - 360) * 0.25) * speed));
+        }else{
+            MainMotorState((int)((10 - (angleX - angle) * 0.25) * speed),(int)((10 + (angleX - angle) * 0.25) * speed));
         }
     }
 }
@@ -248,23 +434,41 @@ void RotationToAngle(int target_angle){
     if (target_angle < 0) {
         target_angle += 360;
     }
+    firstTime = time_us_32();
     while(true){
+        PrintDisplayMode();
         GetGyroAngleFromSub();
         //rotation_angleは回転角
         float rotation_angle = target_angle - angleX;
         if(rotation_angle < 0){
             rotation_angle += 360; 
         }
-        if(rotation_angle < 2 || rotation_angle > 358){
+        if(rotation_angle < 0.5 || rotation_angle > 359.5){
             break;
         }
         //回転角が180°未満なら時計回り,180度以上なら反時計回り
         if(rotation_angle < 180){
-            MainMotorState(150,-150);
+            if((time_us_32() - firstTime) / 2000 > rotation_angle * 5 + 30){
+                if(rotation_angle * 5 + 30 > 300){
+                    MainMotorState(300,-300);
+                }else{
+                    MainMotorState((int)(rotation_angle * 5 + 30),-(int)(rotation_angle * 5 + 30));
+                }
+            }else{
+                MainMotorState((int)(time_us_32() - firstTime) / 2000,-(int)(time_us_32() - firstTime) / 2000);
+            }
         }else if(rotation_angle >= 180){
-            MainMotorState(-150,150);
+            if((time_us_32() - firstTime) / 2000 > (360 - rotation_angle) * 5 + 30){
+                if((360 - rotation_angle) * 5 + 30 > 300){
+                    MainMotorState(-300,300);
+                }else{
+                    MainMotorState(-(int)((360 - rotation_angle) * 5 + 30),(int)((360 - rotation_angle) * 5 + 30));
+                }
+            }else{
+                MainMotorState(-(int)(time_us_32() - firstTime) / 2000,(int)(time_us_32() - firstTime) / 2000);
+            }
         }
-        sleep_ms(1);
+        SendBufferToDisplay();
     }
     MainMotorState(0,0);
 }
@@ -357,18 +561,27 @@ void CatchCan(){
 }
 
 //objectは赤ボールが1,青ボールが2,缶が3
+//赤ボールの時だけ終了時が十字条件を満たさない
 void TrashfromBasket(int object){
     RotationToAngle(90);
-    //ゴールまで下がる
-    MainMotorState(-200,-200);
     GetDataFromLineToMain();
-    sleep_ms(500);
-    while(!circleLineSensor[7] || !circleLineSensor[12]){
-        sleep_ms(10);
+    circleLineAngle = GetCircleLineVector(20,true,true);
+    firstTime = time_us_32();
+    //ゴールまで下がる
+    while(!circleLineSensor[7] || !circleLineSensor[12] || (time_us_32() - firstTime) / 1000 < 750){
+        PrintDisplayMode();
+        GetGyroAngleFromSub();
         GetDataFromLineToMain();
+        circleLineAngle = GetCircleLineVector(20,true,true);
+        if((time_us_32() - firstTime) / 2000 > 200){
+            MainMotorState(- 200 - (int)((angleX - 90) * 10),- 200 + (int)((angleX - 90) * 10));
+        }else{
+            MainMotorState((int)(time_us_32() - firstTime) / -2000 - (int)((angleX - 90) * 10),(int)(time_us_32() - firstTime) / -2000 + (int)((angleX - 90) * 10));
+        }
+        SendBufferToDisplay();
     }
     MainMotorState(0,0);
-    SetStepperSleep();
+    // SetStepperSleep();
     int basket;
     if(object == 1){
         basket = servo_left_basket_pin;
@@ -380,17 +593,86 @@ void TrashfromBasket(int object){
     SetServoAngleFromMain(basket,80);
     sleep_ms(1000);
     SetServoAngleFromMain(basket,160);
-    SetStepperON();    
+    sleep_ms(500);
+    // SetStepperON();
+    GetDataFromLineToMain();
+    circleLineAngle = GetCircleLineVector(20,true,true);
+    firstTime = time_us_32();
+    if(object == 1){
+        while(circleLineSensor[5] + circleLineSensor[6] == 0  || (time_us_32() - firstTime) / 1000 < 750){
+            PrintDisplayMode();
+            GetGyroAngleFromSub();
+            GetDataFromLineToMain();
+            circleLineAngle = GetCircleLineVector(20,true,true);
+            if((time_us_32() - firstTime) / 2000 > 200){
+                MainMotorState(200 - (int)((angleX - 90) * 10),200 + (int)((angleX - 90) * 10));
+            }else{
+                MainMotorState((int)(time_us_32() - firstTime) / -2000 - (int)((angleX - 90) * 10),(int)(time_us_32() - firstTime) / -2000 + (int)((angleX - 90) * 10));
+            }
+            SendBufferToDisplay();
+        }
+        MainMotorState(0,0);
+        sleep_ms(250);
+        RotationToAngle(0);
+    }else{
+        while(VectorNumber != 4  || (time_us_32() - firstTime) / 1000 < 750){
+            PrintDisplayMode();
+            GetGyroAngleFromSub();
+            GetDataFromLineToMain();
+            circleLineAngle = GetCircleLineVector(20,true,true);
+            if((time_us_32() - firstTime) / 2000 > 200){
+                MainMotorState(200 - (int)((angleX - 90) * 10),200 + (int)((angleX - 90) * 10));
+            }else{
+                MainMotorState((int)(time_us_32() - firstTime) / -2000 - (int)((angleX - 90) * 10),(int)(time_us_32() - firstTime) / -2000 + (int)((angleX - 90) * 10));
+            }
+            SendBufferToDisplay();
+        }
+        MainMotorState(0,0);
+        sleep_ms(250);
+        if(object == 3){
+            RotationToAngle(180);
+            sleep_ms(250);
+        }
+    }
 }
 
 void CatchPetBottle(){
-    //ペットボトルを探す挙動
+    GetDistanceFromSub();
+    firstTime = time_us_32();
+    while(distance > 300){
+        PrintDisplayMode();
+        GetDistanceFromSub();
+        GetGyroAngleFromSub();
+        if((time_us_32() - firstTime) / 2000 > 100){
+            MainMotorState(100 - (int)((angleX - 180) * 10),100 + (int)((angleX - 180) * 10));
+        }else{
+            MainMotorState((int)(time_us_32() - firstTime) / 2000 - (int)((angleX - 180) * 10),(int)(time_us_32() - firstTime) / -2000 + (int)((angleX - 180) * 10));
+        }
+        SendBufferToDisplay();
+    }
+    MainMotorState(0,0);
+    
     SetServoAngleFromMain(servo_arm_left_and_right_pin,90);
     SetServoAngleFromMain(servo_left_claw_pin,90);
     SetServoAngleFromMain(servo_right_claw_pin,90);
     SetServoAngleFromMain(servo_arm_up_and_down_pin,160);
-    sleep_ms(2000);
-    
+    sleep_ms(1000);
+    SetServoAngleFromMain(servo_arm_up_and_down_pin,163);
+    sleep_ms(1000);
+
+    firstTime = time_us_32() / 1000;
+    while(time_us_32() / 1000 < firstTime + 1250){
+        PrintDisplayMode();
+        GetGyroAngleFromSub();
+        if((time_us_32() - firstTime) / 2000 > 100){
+            MainMotorState(100 - (int)((angleX - 180) * 10),100 + (int)((angleX - 180) * 10));
+        }else{
+            MainMotorState((int)(time_us_32() - firstTime) / 2000 - (int)((angleX - 180) * 10),(int)(time_us_32() - firstTime) / 2000 + (int)((angleX - 180) * 10));
+        }
+        SendBufferToDisplay();
+    }
+    MainMotorState(0,0);
+
     SetServoAngleFromMain(servo_left_claw_pin,40);
     SetServoAngleFromMain(servo_right_claw_pin,140);
     sleep_ms(500);
@@ -408,7 +690,7 @@ void CatchPetBottle(){
     RotationToAngle(270);
     sleep_ms(500);
     while(!gpio_get(touch_sensor_front_left_pin) && !gpio_get(touch_sensor_front_right_pin)){
-            MainMotorState(200,200);
+        MainMotorState(200,200);
     }
     for(int i = 90; i <= 160;i += 10){
         MainMotorState(-10,-10);
@@ -416,7 +698,6 @@ void CatchPetBottle(){
         SetServoAngleFromMain(servo_arm_up_and_down_pin,i);
     }
     MainMotorState(0,0);
-    SetStepperSleep();
     sleep_ms(500);
     SetServoAngleFromMain(servo_left_claw_pin,90);
     SetServoAngleFromMain(servo_right_claw_pin,90);
