@@ -647,7 +647,7 @@ void TrashfromBasket(int object){
 void CatchPetBottle(){
     GetDistanceFromSub();
     firstTime = time_us_32();
-    while(distance > 300){
+    while(distance > 330){
         PrintDisplayMode();
         GetDistanceFromSub();
         GetGyroAngleFromSub();
@@ -669,7 +669,7 @@ void CatchPetBottle(){
     sleep_ms(1000);
 
     firstTime = time_us_32() / 1000;
-    while(time_us_32() / 1000 < firstTime + 1250){
+    while(time_us_32() / 1000 < firstTime + 2000){
         PrintDisplayMode();
         GetGyroAngleFromSub();
         if((time_us_32() - firstTime) / 2000 > 100){
