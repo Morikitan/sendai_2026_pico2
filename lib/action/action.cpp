@@ -645,6 +645,7 @@ void TrashfromBasket(int object){
 }
 
 void CatchPetBottle(){
+    sleep_ms(100);
     GetDistanceFromSub();
     firstTime = time_us_32();
     while(distance > 330){
