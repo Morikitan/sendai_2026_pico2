@@ -71,7 +71,7 @@ bool read_registers(uint8_t start_reg, uint8_t *dest, size_t len){
 }
 
 //カラセンを利用した物体の判定
-//戻り値は　-1:I2Cエラー,0:その他,1:赤ボール,2:青ボール,3:缶
+//戻り値は　255:I2Cエラー,0:その他,1:赤ボール,2:青ボール,3:缶
 int UseColorSensor(){
     //カラーセンサー用LEDの点灯
     //データの読み出し

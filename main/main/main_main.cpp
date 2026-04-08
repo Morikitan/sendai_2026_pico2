@@ -19,6 +19,7 @@ int main(){
     stdio_init_all();
     sleep_ms(1000);
     StepperSetup();
+    CameraSetup();
     DisplaySetup();
     MainToLineSetup();
     MainToSubSetup();
@@ -50,7 +51,7 @@ int main(){
         }
         PrintDisplayMode();
         UseAllSensor();
-        GetCircleLineVector(20,true,true);
+        float value = GetCircleLineVector(20,true,true);
         SendBufferToDisplay();
     }
 }
