@@ -7,6 +7,8 @@
 
 #define BAUDRATE 115200
 
+CameraInformation cameraInformation[16]; 
+
 void CameraSetup() {
     stdio_init_all();
     sleep_ms(500); 
@@ -18,7 +20,7 @@ void CameraSetup() {
     printf("Camera Setup Complete!\n");
 }
 
-void UseCamera() {
+int UseCamera() {
     uint8_t cmd = 0x01;
     uint8_t data_length = 0;
 
@@ -28,26 +30,28 @@ void UseCamera() {
 
     if (data_length > 0) {
         if(data_length > 64 || data_length % 3 != 0){
-            return;
+            return 0;
         }
         uint8_t buffer[data_length];
         if(!uart_read_with_timeout(camera_uart, buffer, data_length,250)){
-            return;
+            return 0;
         }
         int num_objects = data_length / 3;
         // printf("Found %d objects!\n", num_objects);
-
+        if(num_objects > 16){
+            return 999;
+        }
         for (int i = 0; i < num_objects; i++) {
             uint8_t obj_id = buffer[i * 3];
             uint8_t x_half = buffer[i * 3 + 1];   // 2で割られたX座標
             uint8_t y_half = buffer[i * 3 + 2];   // 2で割られたY座標
-            int real_x = x_half * 2;              // 0~160を0~320に変換
-            int real_y = y_half * 2;
+            cameraInformation[i].x = x_half * 2;              // 0~160を0~320に変換
+            cameraInformation[i].y = y_half * 2;
             if(serialWatch == "cam"){
                 if(isUseDisplay){
                     if(i < 4){
                         if (obj_id == 3) {
-                            snprintf(displayBuffer,displayBufferSize,"Red X%d Y%d",real_x,real_y);
+                            snprintf(displayBuffer,displayBufferSize,"Red X%d Y%d",realxy[0],real_y);
                         } else if (obj_id == 4) {
                             snprintf(displayBuffer,displayBufferSize,"Blu X%d Y%d",real_x,real_y);
                         } else if (obj_id == 5) {
@@ -86,11 +90,12 @@ void UseCamera() {
                     }
                 }
             }
-            
+            return num_objects;
         }
     } else {
         printf("No objects found.\n");
     }
+    return 0;
 }
 
 bool uart_read_with_timeout(uart_inst_t *uart, uint8_t *buffer, size_t length, uint32_t timeout_ms) {

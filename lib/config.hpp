@@ -21,6 +21,12 @@ extern std::string serialWatch;
 #define camera_uart uart0
 #define camera_TX_pin 16 //メインマイコン
 #define camera_RX_pin 17 //メインマイコン
+struct CameraInformation{
+    int x;
+    int y;
+    int obj_id;
+};
+extern CameraInformation cameraInformation[16]; 
 
 //display
 #define display_i2c i2c0

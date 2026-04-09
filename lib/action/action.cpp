@@ -492,6 +492,14 @@ void RotationToTarget(){
 
 }
 
+void RotationToObject(){
+    int num_objects = UseCamera();
+    int y = 0,number = 0;
+    for(int number = 0;number < num_objects;number ++){
+        if(y < realxy[1] && rea)
+    }
+}
+
 void CatchBall(){
     //tofで探す
     uint32_t tofTime = time_us_32();
