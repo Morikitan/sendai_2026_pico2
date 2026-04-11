@@ -26,6 +26,14 @@ struct CameraInformation{
     int y;
     int obj_id;
 };
+//x : 物体の中心のx座標
+//y : 物体の下端のy座標
+//obj_id : 物体のID
+//--- obj_id ---
+//3 : 赤ボール
+//4 : 青ボール
+//5 : 縦の缶
+//6 : 横の缶
 extern CameraInformation cameraInformation[16]; 
 
 //display

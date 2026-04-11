@@ -26,23 +26,43 @@ int UseCamera() {
 
     uart_write_blocking(camera_uart, &cmd, 1);
 
-    uart_read_blocking(camera_uart, &data_length, 1);
+    if(!uart_read_with_timeout(camera_uart, &data_length, 1,100)){
+        if(serialWatch == "cam" && isUseDisplay){
+            snprintf(displayBuffer,displayBufferSize,"connection");
+            WriteTextOnDisplay(5,30,displayBuffer,12,false,false);  
+            snprintf(displayBuffer,displayBufferSize,"error1");
+            WriteTextOnDisplay(5,45,displayBuffer,12,false,false);  
+        }
+        return 555;
+    }
 
     if (data_length > 0) {
         if(data_length > 64 || data_length % 3 != 0){
-            return 0;
+            snprintf(displayBuffer,displayBufferSize,"DataLength");
+            WriteTextOnDisplay(5,30,displayBuffer,12,false,false);  
+            snprintf(displayBuffer,displayBufferSize,"error");
+            WriteTextOnDisplay(5,45,displayBuffer,12,false,false);  
+            return 666;
         }
         uint8_t buffer[data_length];
-        if(!uart_read_with_timeout(camera_uart, buffer, data_length,250)){
-            return 0;
+        if(!uart_read_with_timeout(camera_uart, buffer, data_length,150)){
+            snprintf(displayBuffer,displayBufferSize,"connection");
+            WriteTextOnDisplay(5,30,displayBuffer,12,false,false);  
+            snprintf(displayBuffer,displayBufferSize,"error2");
+            WriteTextOnDisplay(5,45,displayBuffer,12,false,false);
+            return 777;
         }
         int num_objects = data_length / 3;
         // printf("Found %d objects!\n", num_objects);
         if(num_objects > 16){
+            snprintf(displayBuffer,displayBufferSize,"too many");
+            WriteTextOnDisplay(5,30,displayBuffer,12,false,false);  
+            snprintf(displayBuffer,displayBufferSize,"objects");
+            WriteTextOnDisplay(5,45,displayBuffer,12,false,false);
             return 999;
         }
         for (int i = 0; i < num_objects; i++) {
-            uint8_t obj_id = buffer[i * 3];
+            cameraInformation[i].obj_id = buffer[i * 3];
             uint8_t x_half = buffer[i * 3 + 1];   // 2で割られたX座標
             uint8_t y_half = buffer[i * 3 + 2];   // 2で割られたY座標
             cameraInformation[i].x = x_half * 2;              // 0~160を0~320に変換
@@ -50,26 +70,26 @@ int UseCamera() {
             if(serialWatch == "cam"){
                 if(isUseDisplay){
                     if(i < 4){
-                        if (obj_id == 3) {
-                            snprintf(displayBuffer,displayBufferSize,"Red X%d Y%d",realxy[0],real_y);
-                        } else if (obj_id == 4) {
-                            snprintf(displayBuffer,displayBufferSize,"Blu X%d Y%d",real_x,real_y);
-                        } else if (obj_id == 5) {
-                            snprintf(displayBuffer,displayBufferSize,"CaV X%d Y%d",real_x,real_y);
-                        } else if (obj_id == 6) {
-                            snprintf(displayBuffer,displayBufferSize,"CaH X%d Y%d",real_x,real_y);
+                        if (cameraInformation[i].obj_id == 3) {
+                            snprintf(displayBuffer,displayBufferSize,"Red X%d Y%d",cameraInformation[i].x,cameraInformation[i].y);
+                        } else if (cameraInformation[i].obj_id == 4) {
+                            snprintf(displayBuffer,displayBufferSize,"Blu X%d Y%d",cameraInformation[i].x,cameraInformation[i].y);
+                        } else if (cameraInformation[i].obj_id == 5) {
+                            snprintf(displayBuffer,displayBufferSize,"CaV X%d Y%d",cameraInformation[i].x,cameraInformation[i].y);
+                        } else if (cameraInformation[i].obj_id == 6) {
+                            snprintf(displayBuffer,displayBufferSize,"CaH X%d Y%d",cameraInformation[i].x,cameraInformation[i].y);
                         } else {
-                            snprintf(displayBuffer,displayBufferSize,"??? X%d Y%d",real_x,real_y);
+                            snprintf(displayBuffer,displayBufferSize,"??? X%d Y%d",cameraInformation[i].x,cameraInformation[i].y);
                         }
                         WriteTextOnDisplay(5,30+i*10,displayBuffer,8,false,false);  
                     }else if(i < 8){
-                        if (obj_id == 3) {
+                        if (cameraInformation[i].obj_id == 3) {
                             snprintf(displayBuffer,displayBufferSize,"Red");
-                        } else if (obj_id == 4) {
+                        } else if (cameraInformation[i].obj_id == 4) {
                             snprintf(displayBuffer,displayBufferSize,"Blu");
-                        } else if (obj_id == 5) {
+                        } else if (cameraInformation[i].obj_id == 5) {
                             snprintf(displayBuffer,displayBufferSize,"CaV");
-                        } else if (obj_id == 6) {
+                        } else if (cameraInformation[i].obj_id == 6) {
                             snprintf(displayBuffer,displayBufferSize,"CaH");
                         } else {
                             snprintf(displayBuffer,displayBufferSize,"???");
@@ -77,21 +97,22 @@ int UseCamera() {
                         WriteTextOnDisplay(100,-10+i*10,displayBuffer,8,false,false);
                     }
                 }else{
-                    if (obj_id == 3) {
-                        printf("  [赤] ID:%d X:%d Y:%d\n", obj_id, real_x,real_y);
-                    } else if (obj_id == 4) {
-                        printf("  [青] ID:%d, X:%d Y:%d\n", obj_id, real_x,real_y);
-                    } else if (obj_id == 5) {
-                        printf("  [縦缶] ID:%d, X:%d Y:%d\n", obj_id, real_x,real_y);
-                    } else if (obj_id == 6) {
-                        printf("  [横缶] ID:%d, X:%d Y:%d\n", obj_id, real_x,real_y);
+                    if (cameraInformation[i].obj_id == 3) {
+                        printf("  [赤] ID:%d X:%d Y:%d\n", cameraInformation[i].obj_id, cameraInformation[i].x,cameraInformation[i].y);
+                    } else if (cameraInformation[i].obj_id == 4) {
+                        printf("  [青] ID:%d, X:%d Y:%d\n", cameraInformation[i].obj_id, cameraInformation[i].x,cameraInformation[i].y);
+                    } else if (cameraInformation[i].obj_id == 5) {
+                        printf("  [縦缶] ID:%d, X:%d Y:%d\n", cameraInformation[i].obj_id, cameraInformation[i].x,cameraInformation[i].y);
+                    } else if (cameraInformation[i].obj_id == 6) {
+                        printf("  [横缶] ID:%d, X:%d Y:%d\n", cameraInformation[i].obj_id, cameraInformation[i].x,cameraInformation[i].y);
                     } else {
-                        printf("  [Unknown] ID:%d, X:%d Y:%d\n", obj_id, real_x,real_y);
+                        printf("  [Unknown] ID:%d, X:%d Y:%d\n", cameraInformation[i].obj_id, cameraInformation[i].x,cameraInformation[i].y);
                     }
                 }
             }
-            return num_objects;
+            
         }
+        return num_objects;
     } else {
         printf("No objects found.\n");
     }
