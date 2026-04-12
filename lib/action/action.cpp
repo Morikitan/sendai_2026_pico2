@@ -795,6 +795,12 @@ void CatchPetBottle(){
     }
     MainMotorState(0,0);
     sleep_ms(500);
+    setServoAngleFromMain(servo_left_claw_pin,50);
+    setServoAngleFromMain(servo_right_claw_pin,130);
+    sleep_ms(1000);
+    MainMotorState(-200,-200);
+    sleep_ms(100);
+    MainMotorState(0,0);
     SetServoAngleFromMain(servo_left_claw_pin,90);
     SetServoAngleFromMain(servo_right_claw_pin,90);
     sleep_ms(1000);
