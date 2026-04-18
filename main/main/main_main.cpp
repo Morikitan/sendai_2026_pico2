@@ -27,12 +27,15 @@ int main(){
     EncoderSetup();
     SetStepperSleep();
     LineTraceSetup();
+    ColorLEDSetup();
     sleep_ms(2000);
     SetServoAngleFromMain(servo_arm_up_and_down_pin,60);
     SetServoAngleFromMain(servo_left_claw_pin,90);
     SetServoAngleFromMain(servo_right_claw_pin,90);
     // SetSuctionMotorSpeedFromMain(75);//30%
+    UseColorLED(255,255,0);
     while(true){
+        
         if(gpio_get(tactile_switch_pin1) == true){
             CatchBall();
             sleep_ms(3000);

@@ -94,11 +94,11 @@ int UseColorSensor(){
     printf("R:%d G:%d B:%d\n", r, g, b);
     //objectは持っているものを表す変数　127:その他,1:赤ボール,2:青ボール,3:缶
     int object = 127;
-    if(r > 1000){
+    if(r > 2000){
         object = 1;
-    }else if(b > 1000){
+    }else if(b > 1750){
         object = 2;
-    }else if(r > 200 && g > 200){
+    }else if(r > 1100 && g > 950){
         object = 3;
     }
     printf("Object:%d\n",object);

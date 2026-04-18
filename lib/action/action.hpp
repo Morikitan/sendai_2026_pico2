@@ -13,7 +13,7 @@ void NewLineTrace();
 void BackLineTrace();
 void BackToLine();
 void StraightLineTrace(int angle);
-int RotationToObject(bool angle);
+int RotationToObject();
 void CatchPetBottle();
 void CatchBall();
 void CatchCan();
