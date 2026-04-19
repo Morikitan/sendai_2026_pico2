@@ -115,8 +115,8 @@ int UseCamera() {
         return num_objects;
     } else {
         printf("No objects found.\n");
+        return 0;
     }
-    return 0;
 }
 
 bool uart_read_with_timeout(uart_inst_t *uart, uint8_t *buffer, size_t length, uint32_t timeout_ms) {

@@ -137,7 +137,7 @@ void GetDistanceFromSub(){
     distance = (data[0] << 8) | data[1];
     if(serialWatch == "tof"){
         if(isUseDisplay){
-            if (distance == 0xFF){
+            if (distance == 0xFFFF){
                 WriteTextOnDisplay(5,30,"Measurement",8,false,false);
                 WriteTextOnDisplay(5,40,"timed out",8,false,false);
             }else{
@@ -145,7 +145,7 @@ void GetDistanceFromSub(){
                 WriteTextOnDisplay(5,30,displayBuffer,8,false,false);
             }
         }else{
-            if (distance == 0xFF){
+            if (distance == 0xFFFF){
                 printf("Measurement timed out\n");
             }else{
                 printf("Distance: %u mm\n", distance);

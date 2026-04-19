@@ -126,18 +126,18 @@ void MainMove(){
         OnWall();
         MainMotorState(0,0);
         //ボールと缶を合わせて4つとって線上に復帰する
+        int objID;
         while(objectNumber < 4){
-            int obj_num;
-            obj_num = RotationToObject();
-            if(cameraInformation[obj_num].obj_id == 3 || cameraInformation[obj_num].obj_id == 4){
+            objID = RotationToObject();
+            if(objID == 3 || objID == 4){
                 CatchBall();
-            }else if(cameraInformation[obj_num].obj_id == 5 || cameraInformation[obj_num].obj_id == 6){
+            }else if(objID == 5 || objID == 6){
                 CatchCan();
             }else{
 
             }
             UseColorLED(0,0,0);
-            if(3 <= cameraInformation[obj_num].obj_id && cameraInformation[obj_num].obj_id <= 6){
+            if(3 <= objID && objID <= 6){
                 BackToLine();
                 OnWall();
                 objectNumber++;
@@ -494,7 +494,10 @@ int RotationToObject(){
     int Y,number;
     while(true){
         PrintDisplayMode();
-        int num_objects = UseCamera();
+        int num_objects;
+        do{
+            num_objects = UseCamera();
+        }while(num_objects > 100);//100より大きい数はエラー信号
         Y = 999,number = 0;
         for(int i = 0;i < num_objects;i++){
             if(Y > cameraInformation[i].y && 3 <= cameraInformation[i].obj_id && cameraInformation[i].obj_id <= 6){
@@ -558,7 +561,7 @@ int RotationToObject(){
         }
         if(centorX - 3 < cameraInformation[number].x && cameraInformation[number].x < centorX + 3){
             MainMotorState(0,0);
-            return number;
+            return cameraInformation[number].obj_id;
         }
         SendBufferToDisplay();
     }
@@ -605,6 +608,9 @@ void CatchBall(){
             MainMotorState(100,100);
         }
         GetDistanceFromSub();
+        if(distance == 0xFFFF){
+            MainMotorState(0,0);
+        }
         if(distance > 250){
             tofTime = time_us_32();
         }
@@ -698,11 +704,14 @@ void CatchCan(){
             MainMotorState(100,100);
         }
         GetDistanceFromSub();
+        if(distance == 0xFFFF){
+            MainMotorState(0,0);
+        }
         if(distance > 250){
             tofTime = time_us_32();
         }
         SendBufferToDisplay();
-    }while(tofTime + 100000 > time_us_32());
+    }while(tofTime + 100000 > time_us_32() || distance > 250);
     MainMotorState(0,0);
     SetServoAngleFromMain(servo_arm_up_and_down_pin,155);
     sleep_ms(1000);

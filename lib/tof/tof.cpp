@@ -40,7 +40,7 @@ void TofSetup(){
 void UseTof(){
     distance = sensor.readRangeContinuousMillimeters();
     if (sensor.timeoutOccurred()){
-        distance = 0xFF;
+        distance = 0xFFFF;
         printf("Measurement timed out\n");
     }else{
         printf("Distance: %u mm\n", distance);
