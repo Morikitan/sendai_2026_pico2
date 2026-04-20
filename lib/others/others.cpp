@@ -41,7 +41,7 @@ void ColorLEDSetup(){
 }
 
 void UseColorLED(uint8_t red,uint8_t green,uint8_t blue){
-    pio_sm_put_blocking(pio_colorLED, 0, ((uint32_t)(red) << 0) | ((uint32_t)(green) << 16) | (uint32_t)(blue) << 8);
+    pio_sm_put_blocking(pio_colorLED, 0, ((uint32_t)(red) << 16) | ((uint32_t)(green) << 24) | (uint32_t)(blue) << 8);
 }
 
 //正面0度時計回りの度数法の角度を座標平面の弧度法(正面π/2反時計回り)に変換する。
