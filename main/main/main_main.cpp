@@ -33,7 +33,7 @@ int main(){
     SetServoAngleFromMain(servo_left_claw_pin,90);
     SetServoAngleFromMain(servo_right_claw_pin,90);
     // SetSuctionMotorSpeedFromMain(75);//30%
-    UseColorLED(255,255,0);
+    UseColorLED(0,255,0);
     while(true){
         
         if(gpio_get(tactile_switch_pin1) == true){

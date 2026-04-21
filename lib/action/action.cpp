@@ -145,6 +145,18 @@ void MainMove(){
                 BackToLine();
                 OnWall();
             }
+            if(objectNumber == 3){
+                firstTime = time_us_32();
+                while((time_us_32() - firstTime) / 1000 < 500){
+                    PrintDisplayMode();
+                    MainMotorState(-200,- 200);
+                    SendBufferToDisplay();
+                }
+                MainMotorState(0,0);
+                sleep_ms(200);
+                ResetGyroFromMain(180);
+                sleep_ms(1200);
+            }
         }
         UseColorLED(255,255,255);
         CatchPetBottle();
@@ -196,7 +208,9 @@ void MainMove(){
         PassTheSpace();
         lineNumber++;
     }else if(lineNumber < 15){//残りを全部取りきる
-
+        while(objectNumber < 6){
+            
+        }
     }
 }
 
@@ -512,6 +526,7 @@ int RotationToObject(){
         }
         if(isGreaterThanCentorX == 0){
             if(num_objects > 0){
+                if(!((cameraInformation[number].obj_id == 5 || cameraInformation[number].obj_id == 6) && cameraInformation[number].y < 110))
                 if(cameraInformation[number].x > centorX){
                     isGreaterThanCentorX = 1;
                 }else{
@@ -804,7 +819,7 @@ void TrashfromBasket(int object){
             if((time_us_32() - firstTime) / 2000 > 200){
                 MainMotorState(200 - (int)((angleX - 90) * 10),200 + (int)((angleX - 90) * 10));
             }else{
-                MainMotorState((int)(time_us_32() - firstTime) / -2000 - (int)((angleX - 90) * 10),(int)(time_us_32() - firstTime) / -2000 + (int)((angleX - 90) * 10));
+                MainMotorState((int)(time_us_32() - firstTime) / 2000 - (int)((angleX - 90) * 10),(int)(time_us_32() - firstTime) / 2000 + (int)((angleX - 90) * 10));
             }
             SendBufferToDisplay();
         }
@@ -820,7 +835,7 @@ void TrashfromBasket(int object){
             if((time_us_32() - firstTime) / 2000 > 200){
                 MainMotorState(200 - (int)((angleX - 90) * 10),200 + (int)((angleX - 90) * 10));
             }else{
-                MainMotorState((int)(time_us_32() - firstTime) / -2000 - (int)((angleX - 90) * 10),(int)(time_us_32() - firstTime) / -2000 + (int)((angleX - 90) * 10));
+                MainMotorState((int)(time_us_32() - firstTime) / 2000 - (int)((angleX - 90) * 10),(int)(time_us_32() - firstTime) / 2000 + (int)((angleX - 90) * 10));
             }
             SendBufferToDisplay();
         }
@@ -935,7 +950,7 @@ void CatchPetBottle(){
 //カメラを使う位置に戻る。線上にいる前提
 void OnWall(){
     firstTime = time_us_32();
-    while(!gpio_get(touch_sensor_back_left_pin)){
+    while(!gpio_get(touch_sensor_back_left_pin) || !gpio_get(touch_sensor_back_right_pin)){
         PrintDisplayMode();
         GetGyroAngleFromSub();
         if((time_us_32() - firstTime) / 2000 > 200){

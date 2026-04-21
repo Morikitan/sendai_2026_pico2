@@ -139,10 +139,10 @@ void MainInterrupt(uint gpio, uint32_t events){
         }
 
         // ループ処理（0〜MAX_displayMode）
-        if (displayMode > 9) {
+        if (displayMode > 10) {
             displayMode = 1;
         } else if (displayMode <= 0) {
-            displayMode = 9;
+            displayMode = 10;
         }
     }
 }

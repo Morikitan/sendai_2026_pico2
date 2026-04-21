@@ -76,9 +76,19 @@ void SubCallBack(){
             break;
         }
         case 0x13:{
+            //サーボをオフにする
             uint8_t gpio;
             uart_read_blocking(sub_to_main_uart,&gpio,1);
             SetServoOff(gpio);
+            break;
+        }
+        case 0x14:{
+            //サーボをオフにする
+            uint8_t halfAngle;
+            uart_read_blocking(sub_to_main_uart,&halfAngle,1);
+            correctionAngle = halfAngle * 2;
+            GyroSetup();
+            break;
         }
         default:
             break;
@@ -103,6 +113,13 @@ void SetServoOffFromMain(unsigned int gpio){
 //4で割った数値を代入する(duty = 300の場合は75)
 void SetSuctionMotorSpeedFromMain(uint8_t duty){
    uart_write_blocking(main_to_sub_uart,(uint8_t[]){0x12,(uint8_t)duty},2);
+}
+
+//ジャイロをリセットする関数
+//correctionAngle : gyroの補正用の角度
+//※使用後1.2秒はジャイロを使わないこと
+void ResetGyroFromMain(int correctionAngle){
+   uart_write_blocking(main_to_sub_uart,(uint8_t[]){0x14,(uint8_t)(correctionAngle / 2)},2);
 }
 
 //メインマイコンがサブマイコンからAngleXを取得する関数

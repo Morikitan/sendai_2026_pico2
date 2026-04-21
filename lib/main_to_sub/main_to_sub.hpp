@@ -12,6 +12,7 @@ void SubCallBack();
 void SetServoAngleFromMain(unsigned int gpio,int angle);
 void SetServoOffFromMain(unsigned int gpio);
 void SetSuctionMotorSpeedFromMain(uint8_t duty);
+void ResetGyroFromMain(int correctionAngle);
 void GetGyroAngleFromSub();
 void GetDistanceFromSub();
 void GetColorFromSub();

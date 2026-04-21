@@ -23,14 +23,15 @@ int circle20[20][2] = {
 void DisplaySetup(){
     /******************
     1  : hom 通常モード(modeを表示)〇
-    2  : cam カメラの値(ボールの位置と色とか？)
-    3  : col カラーセンサの値
-    4  : cur 電流センサの値〇
-    5  : gyr 機体の角度(AngleX)〇
-    6  : lin ラインセンサーの値(0か1で受け取る)〇
-    7  : tim 1回の経過時間(ミリ秒)〇
-    8  : tof tofの値〇
-    9  : oth その他(時によって変わる)〇
+    2  : cam1 カメラの値の前半(ボールの位置と色とか？)
+    3  : cam2 カメラの値の後半
+    4  : col カラーセンサの値
+    5  : cur 電流センサの値〇
+    6  : gyr 機体の角度(AngleX)〇
+    7  : lin ラインセンサーの値(0か1で受け取る)〇
+    8  : tim 1回の経過時間(ミリ秒)〇
+    9  : tof tofの値〇
+    10 : oth その他(時によって変わる)〇
     *******************/
     serialWatch = "hom";
     SetDisplayMode();
@@ -69,31 +70,34 @@ void PrintDisplayMode(){
         snprintf(displayBuffer,displayBufferSize,"%d",lineNumber);
         WriteTextOnDisplay(5,30,displayBuffer,12,false,false);
     }else if(displayMode == 2){
-        serialWatch = "cam";
-        WriteTextOnDisplay(5,15,"<Camera>",12,true,false);
+        serialWatch = "cam1";
+        WriteTextOnDisplay(5,15,"<Camera1>",12,true,false);
     }else if(displayMode == 3){
+        serialWatch = "cam2";
+        WriteTextOnDisplay(5,15,"<Camera2>",12,true,false);
+    }else if(displayMode == 4){
         serialWatch = "col";
         WriteTextOnDisplay(5,15,"<ColorSen>",12,true,false);
-    }else if(displayMode == 4){
+    }else if(displayMode == 5){
         serialWatch = "cur";
         WriteTextOnDisplay(5,15,"<CurSen>",12,true,false);
-    }else if(displayMode == 5){
+    }else if(displayMode == 6){
         serialWatch = "gyr";
         WriteTextOnDisplay(5,15,"<GyroSensor>",12,true,false);
-    }else if(displayMode == 6){
+    }else if(displayMode == 7){
         serialWatch = "lin";
         WriteTextOnDisplay(64,15,"<Line>",12,true,false);
         DrawLineMapOnDisplay();
-    }else if(displayMode == 7){
+    }else if(displayMode == 8){
         serialWatch = "tim";
         WriteTextOnDisplay(5,15,"<DeltaTime>",12,true,false);
         snprintf(displayBuffer,displayBufferSize,"%fms",timer_hw->timerawl / 1000.0-displayPreTime);
         WriteTextOnDisplay(5,30,displayBuffer,12,false,false);
         displayPreTime = timer_hw->timerawl / 1000.0;
-    }else if(displayMode == 8){
+    }else if(displayMode == 9){
         serialWatch = "tof";
         WriteTextOnDisplay(5,15,"<Tof>",12,true,false);
-    }else if(displayMode == 9){
+    }else if(displayMode == 10){
         serialWatch = "oth";
         WriteTextOnDisplay(5,15,"<Others>",12,true,false);
     }else{
@@ -217,22 +221,24 @@ void SetDisplayMode(){
     *******************/
     if(serialWatch == "hom"){
         displayMode = 1;
-    }else if(serialWatch == "cam"){
+    }else if(serialWatch == "cam1"){
         displayMode = 2;
-    }else if(serialWatch == "col"){
+    }else if(serialWatch == "cam2"){
         displayMode = 3;
-    }else if(serialWatch == "cur"){
+    }else if(serialWatch == "col"){
         displayMode = 4;
-    }else if(serialWatch == "gyr"){
+    }else if(serialWatch == "cur"){
         displayMode = 5;
-    }else if(serialWatch == "lin"){
+    }else if(serialWatch == "gyr"){
         displayMode = 6;
-    }else if(serialWatch == "tim"){
+    }else if(serialWatch == "lin"){
         displayMode = 7;
-    }else if(serialWatch == "tof"){
+    }else if(serialWatch == "tim"){
         displayMode = 8;
-    }else if(serialWatch == "oth"){
+    }else if(serialWatch == "tof"){
         displayMode = 9;
+    }else if(serialWatch == "oth"){
+        displayMode = 10;
     }
 }
 

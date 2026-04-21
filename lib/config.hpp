@@ -58,6 +58,7 @@ extern int circle20[20][2];
 #define gyro_SCL_pin 19 //サブマイコン
 #define gyro_reset_pin 22 //サブマイコン
 extern float angleX;
+extern int correctionAngle;
 extern unsigned char gyroBuffer[2];
 
 //line

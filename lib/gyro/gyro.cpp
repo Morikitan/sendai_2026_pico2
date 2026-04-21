@@ -12,10 +12,17 @@ unsigned char gyroBuffer[2];
 
 #define BNO_ADDRESS 0x28
 
+int correctionAngle;
+
 void GyroSetup(){
     i2c_init(gyro_i2c,115200);
     gpio_set_function(gyro_SDA_pin, GPIO_FUNC_I2C);
     gpio_set_function(gyro_SCL_pin, GPIO_FUNC_I2C);
+    gpio_set_dir(gyro_reset_pin,GPIO_OUT);
+    gpio_put(gyro_reset_pin,0);
+    sleep_ms(10);
+    gpio_put(gyro_reset_pin,1);
+    sleep_ms(800);
     i2c_write_blocking(gyro_i2c,BNO_ADDRESS,(uint8_t[]){0x00},1,true);
     uint8_t chip_id;
     i2c_read_blocking(gyro_i2c, BNO_ADDRESS, &chip_id, 1, false); 
@@ -67,13 +74,14 @@ void UseGyroSensor(){
         }*/
         if(isBreak == true){
             if(isUseDisplay){
-                WriteTextOnDisplay(5,15,"ジャイロ死亡",24,true,true);
+                WriteTextOnDisplay(5,15,"gyro died",24,true,true);
             }else{
                 printf("ジャイロ死亡\n");
             }
         }else{
             i2c_read_blocking(gyro_i2c, BNO_ADDRESS, gyroBuffer, 2, false); 
-            angleX = ((gyroBuffer[1] << 8) | gyroBuffer[0]) / 16.0;
+            angleX = ((gyroBuffer[1] << 8) | gyroBuffer[0]) / 16.0 - (float)correctionAngle;
+            if(angleX < 0) angleX += 360.0;
             if(serialWatch == "gyr"){
                 if(isUseDisplay){
                     DrawCircleOnDisplay(5,20,20);
@@ -85,6 +93,7 @@ void UseGyroSensor(){
                     printf("angleX : %f\n",angleX);
                 }
             }
+            
             // if(mode == 2 || mode == 4 || mode == 8 || mode == 10){
                 // if (angleX > 180){
                     // angleX -= 180;
