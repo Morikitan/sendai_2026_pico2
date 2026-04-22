@@ -21,7 +21,7 @@ void TrashfromBasket(int object);
 void UseAllSensor();
 void PassTheSpace();
 float GetCircleLineVector(int number,bool isFrontLine,bool isGetJuji);
-void OnWall();
+void OnWall(int angle);
 
 #ifdef __cplusplus
 }
