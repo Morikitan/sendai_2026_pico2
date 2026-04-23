@@ -42,7 +42,9 @@ int main(){
             CatchCan();
         }else if(gpio_get(tactile_switch_pin2) == true){
             //CatchPetBottle();
-            BackToLine();
+            UseColorLED(0,0,255);
+            ResetGyro(0);
+            UseColorLED(0,255,0);
         }else if(gpio_get(tactile_switch_pin3) == true){
             SetStepperON();
             sleep_ms(500);

@@ -58,7 +58,7 @@ extern int circle20[20][2];
 #define gyro_SCL_pin 19 //サブマイコン
 #define gyro_reset_pin 22 //サブマイコン
 extern float angleX;
-extern int correctionAngle;
+extern float correctionAngle;
 extern unsigned char gyroBuffer[2];
 
 //line
@@ -156,3 +156,4 @@ extern uint8_t currentBuffer[6];
 #define color_LED_pin 28 //メインマイコン
 extern int canNumber;
 extern int lineNumber;
+extern bool isGyroReset;

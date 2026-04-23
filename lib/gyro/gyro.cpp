@@ -1,5 +1,6 @@
 #include "display.hpp"
 #include "gyro.hpp"
+#include "main_to_sub.hpp"
 #include "others.hpp"
 #include "../config.hpp"
 #include "hardware/gpio.h"
@@ -12,7 +13,7 @@ unsigned char gyroBuffer[2];
 
 #define BNO_ADDRESS 0x28
 
-int correctionAngle;
+float correctionAngle;
 
 void GyroSetup(){
     i2c_init(gyro_i2c,115200);
@@ -103,4 +104,10 @@ void UseGyroSensor(){
             // }
         }
     }
+}
+
+void ResetGyro(int correctionAngle2){
+    GetGyroAngleFromSub();
+    if(correctionAngle2 < 30 && angleX > 180) angleX -= 360.0;
+    correctionAngle = (float)correctionAngle2 - (angleX - correctionAngle);
 }

@@ -10,6 +10,7 @@
 #include "hardware/gpio.h"
 #include "hardware/pwm.h"
 #include "hardware/adc.h"
+#include "hardware/sync.h"
 #include "pico/stdlib.h"
 #include <stdio.h>
 
@@ -29,27 +30,12 @@ int main(){
     // SetSuctionMotorSpeed(250);
     printf("tof使用開始\n");
     while(true){
-        // CatchCanFromSub();
-        // UseTof();
-        // SetServoAngle(servo_arm_up_and_down_pin,60);
-        // SetServoAngle(servo_left_claw_pin,90);
-        // SetServoAngle(servo_right_claw_pin,90);
-        // UseColorSensor();
-        sleep_ms(100);
-        //adc_select_input(2);
-        //int adc = adc_read();
-        //printf("%d\n",adc);
-        //sleep_ms(10);
-        //UseGyroSensor();
-        //CatchBall();
-        //SetServoAngle(servo_sentor_basket_pin,60);
-        //CatchCan(true);
-        //sleep_ms(1000);
-        //CatchCan(false);
-        //sleep_ms(1000);
-        //ThrowCan();
-        //sleep_ms(5000);
-        //printf("object: %d\n",UseColorSensor());
-        // sleep_ms(100);
+        sleep_ms(1);
+        if(isGyroReset){
+            uint32_t status = save_and_disable_interrupts();
+            GyroSetup();
+            restore_interrupts(status);
+            isGyroReset = false;
+        }
     }
 }

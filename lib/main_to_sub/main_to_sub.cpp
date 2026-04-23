@@ -13,15 +13,19 @@
 
 #define BAUDRATE 115200
 
+bool isGyroReset;
+
 void MainToSubSetup(){
     gpio_init(main_to_sub_RX_pin);
     gpio_init(main_to_sub_TX_pin);
     gpio_set_function(main_to_sub_RX_pin,GPIO_FUNC_UART);
     gpio_set_function(main_to_sub_TX_pin,GPIO_FUNC_UART);
     uart_init(main_to_sub_uart,BAUDRATE);
+    correctionAngle = 0;
 }
 
 void SubToMainSetup(){
+    isGyroReset = false;
     gpio_init(sub_to_main_RX_pin);
     gpio_init(sub_to_main_TX_pin);
     gpio_set_function(sub_to_main_RX_pin,GPIO_FUNC_UART);
@@ -86,8 +90,8 @@ void SubCallBack(){
             //サーボをオフにする
             uint8_t halfAngle;
             uart_read_blocking(sub_to_main_uart,&halfAngle,1);
-            correctionAngle = halfAngle * 2;
-            GyroSetup();
+            correctionAngle = (int)(halfAngle) * 2;
+            isGyroReset = true;
             break;
         }
         default:
@@ -129,7 +133,9 @@ void GetGyroAngleFromSub(){
     // printf("受信待ち\n");
     uart_read_blocking(main_to_sub_uart,gyroBuffer,2);
     // printf("受信\n");
-    angleX = ((gyroBuffer[1] << 8) | gyroBuffer[0]) / 16.0;
+    angleX = ((gyroBuffer[1] << 8) | gyroBuffer[0]) / 16.0 + correctionAngle;
+    if(angleX >= 360) angleX -= 360;
+    if(angleX < 0) angleX += 360;
     if(serialWatch == "gyr"){
         if(isUseDisplay){
             DrawCircleOnDisplay(5,20,20);
