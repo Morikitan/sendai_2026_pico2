@@ -9,14 +9,14 @@
 void ServoSetup(){
     //ピンの初期化
     gpio_init(servo_left_basket_pin);
-    gpio_init(servo_centor_basket_pin);
+    gpio_init(servo_center_basket_pin);
     gpio_init(servo_right_basket_pin);
     gpio_init(servo_left_claw_pin);
     gpio_init(servo_right_claw_pin);
     gpio_init(servo_arm_left_and_right_pin);
     gpio_init(servo_arm_up_and_down_pin);
     gpio_set_function(servo_left_basket_pin,GPIO_FUNC_PWM);
-    gpio_set_function(servo_centor_basket_pin,GPIO_FUNC_PWM);
+    gpio_set_function(servo_center_basket_pin,GPIO_FUNC_PWM);
     gpio_set_function(servo_right_basket_pin,GPIO_FUNC_PWM);
     gpio_set_function(servo_left_claw_pin,GPIO_FUNC_PWM);
     gpio_set_function(servo_right_claw_pin,GPIO_FUNC_PWM);
@@ -30,7 +30,7 @@ void ServoSetup(){
 void SetServoAngle(unsigned int gpio,int angle){
     uint slice_num = pwm_gpio_to_slice_num(gpio);
     pwm_set_enabled(slice_num,false);
-    if(gpio == servo_left_claw_pin || gpio == servo_right_claw_pin || gpio == servo_left_basket_pin || gpio == servo_right_basket_pin || gpio == servo_centor_basket_pin){
+    if(gpio == servo_left_claw_pin || gpio == servo_right_claw_pin || gpio == servo_left_basket_pin || gpio == servo_right_basket_pin || gpio == servo_center_basket_pin){
         if(10 <= angle && angle <= 160){
             //MG90S
             // クロック分周器を100.0に設定 (150MHz / 100 = 1.5MHz)
@@ -63,11 +63,11 @@ void SetServoOff(unsigned int gpio){
 }
 
 void ThrowCan(){
-    SetServoAngle(servo_centor_basket_pin,60);
+    SetServoAngle(servo_center_basket_pin,60);
     sleep_ms(2000);
-    SetServoAngle(servo_centor_basket_pin,160);
+    SetServoAngle(servo_center_basket_pin,160);
     sleep_ms(500);
-    SetServoOff(servo_centor_basket_pin);
+    SetServoOff(servo_center_basket_pin);
 }
 
 void CatchCanFromSub(){
@@ -92,11 +92,11 @@ void CatchCanFromSub(){
     SetServoAngle(servo_arm_up_and_down_pin,90);
     // if(canNumber == 1 && (color == 2 || color == 3)){
         // sleep_ms(250);
-        // SetServoAngle(servo_centor_basket_pin,120);
+        // SetServoAngle(servo_center_basket_pin,120);
         // sleep_ms(500);
-        // SetServoAngle(servo_centor_basket_pin,160);
+        // SetServoAngle(servo_center_basket_pin,160);
         // sleep_ms(500);
-        // SetServoOff(servo_centor_basket_pin);
+        // SetServoOff(servo_center_basket_pin);
     // }
 }
 

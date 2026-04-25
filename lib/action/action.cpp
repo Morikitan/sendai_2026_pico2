@@ -14,7 +14,7 @@
 #include <math.h>
 #include <stdio.h>
 
-#define centorX 168 // カメラの中心のX座標
+#define centerX 168 // カメラの中心のX座標
 
 int lineNumber;
 int preLineAngle;
@@ -134,15 +134,14 @@ void MainMove(){
             }
             if(objID == 3 || objID == 4){
                 CatchBall();
-            }else if(objID == 5 || objID == 6){
-                CatchCan();
-            }else{
-
+            }else if(objID == 5){
+                CatchVerticalCan();
+            }else if(objID == 6){
+                CatchHorizonCan();
             }
             UseColorLED(0,0,0);
             BackToLine();
             RotationToAngle(180);
-            if(objectNumber < 6)OnWall(180);
             if(objectNumber == 5){
                 firstTime = time_us_32();
                 while((time_us_32() - firstTime) / 1000 < 250){
@@ -153,6 +152,8 @@ void MainMove(){
                 MainMotorState(0,0);
                 sleep_ms(200);
                 ResetGyro(180);
+            }else{
+                OnWall(180);
             }
         }
         UseColorLED(255,255,255);
@@ -267,7 +268,7 @@ void MainMove(){
                 MainMotorState((int)(time_us_32() - firstTime) / 2000 - (int)(angleX * 10),(int)(time_us_32() - firstTime) / 2000 + (int)(angleX * 10));
             }
             SendBufferToDisplay();
-        }while(lineNumber < 3);
+        }while(lineNumber < 3 || circleLineAngle < -999);
         MainMotorState(0,0);
         lineNumber++;
         preLineAngle = 0;
@@ -294,7 +295,7 @@ void MainMove(){
                 CatchBall();
                 objectNumber++;
             }else if(objID == 5 || objID == 6){
-                CatchCan();
+                CatchVerticalCan();
                 objectNumber++;
             }else{
 
@@ -317,6 +318,8 @@ void MainMove(){
         BackToLine();
         RotationToAngle(0);
         OnWall(0);
+        uint8_t cmd = 0x23;
+        uart_write_blocking(camera_uart,&cmd,1);
         firstTime = time_us_32();
         while((time_us_32() - firstTime) / 1000 < 250){
             PrintDisplayMode();
@@ -650,40 +653,46 @@ void RotationToAngle(int target_angle){
 //angle : trueなら右側を向く
 int RotationToObject(){
     firstTime = time_us_32();
-    int isGreaterThanCentorX; // 0が初期状態。1が大きい。2が小さい。
+    int isGreaterThancenterX; // 0が初期状態。1が大きい。2が小さい。
     int decidedObj_id;
     int Y,number;
     int rotationTime;
     int firstRotationTime;
     int retireNumber;
     Find:
-    isGreaterThanCentorX = 0;
+    isGreaterThancenterX = 0;
     decidedObj_id = 0;
     rotationTime = time_us_32();
     firstRotationTime = rotationTime;
     retireNumber = 0;
     while((time_us_32() - rotationTime) / 1000 < 500){
         PrintDisplayMode();
-        int num_objects;
-        do{
+        int num_objects = 0;
+        num_objects = UseCamera();
+        while(num_objects > 100){
+            UseColorLED(255,0,255);
             num_objects = UseCamera();
-        }while(num_objects > 100);//100より大きい数はエラー信号
+        }//100より大きい数はエラー信号
         Y = 999,number = 0;
         for(int i = 0;i < num_objects;i++){
             if(Y > cameraInformation[i].y && 3 <= cameraInformation[i].obj_id && cameraInformation[i].obj_id <= 6){
-                if(((rotationTime - firstRotationTime) / 1000 < 3000) || 3 <= cameraInformation[i].obj_id && cameraInformation[i].obj_id <= 4){
+                if(((rotationTime - firstRotationTime) / 1000 < 5000) || (3 <= cameraInformation[i].obj_id && cameraInformation[i].obj_id <= 4)){
                     number = i;
                     Y = cameraInformation[i].y;
                 }
             }
         }
-        if(num_objects == 0 || Y == 999){
-            rotationTime = time_us_32();
-            SendBufferToDisplay();
+        if(num_objects == 0){
             retireNumber++;
             if(retireNumber > 100){
                 return 999;
             }
+        }else{
+            retireNumber = 0;
+        }
+        if(num_objects == 0 || Y == 999){
+            rotationTime = time_us_32();
+            SendBufferToDisplay();
             continue;
         }
         if(decidedObj_id != cameraInformation[number].obj_id){
@@ -700,13 +709,14 @@ int RotationToObject(){
         SendBufferToDisplay();
     }
 
-    if(cameraInformation[number].x > centorX){
-        isGreaterThanCentorX = 1;
+    if(cameraInformation[number].x > centerX){
+        isGreaterThancenterX = 1;
     }else{
-        isGreaterThanCentorX = 2;
+        isGreaterThancenterX = 2;
     }
     int gotoNumber = 0;
     firstTime = time_us_32();
+
     while(true){
         PrintDisplayMode();
         int num_objects;
@@ -716,8 +726,8 @@ int RotationToObject(){
         Y = 999,number = 0;
         for(int i = 0;i < num_objects;i++){
             if(Y > cameraInformation[i].y && 3 <= cameraInformation[i].obj_id && cameraInformation[i].obj_id <= 6){
-                if((((isGreaterThanCentorX == 1 && cameraInformation[i].x > centorX) || (isGreaterThanCentorX == 2 && cameraInformation[i].x < centorX)) && (cameraInformation[i].obj_id == decidedObj_id || (cameraInformation[i].obj_id == 5 && decidedObj_id == 6) || (cameraInformation[i].obj_id == 6 && decidedObj_id == 5)))){
-                    if(firstTime / 1000 + 5000 > time_us_32() / 1000 || cameraInformation[i].x > centorX){
+                if((((isGreaterThancenterX == 1 && cameraInformation[i].x > centerX - 5) || (isGreaterThancenterX == 2 && cameraInformation[i].x < centerX + 5)) && (cameraInformation[i].obj_id == decidedObj_id || (cameraInformation[i].obj_id == 5 && decidedObj_id == 6) || (cameraInformation[i].obj_id == 6 && decidedObj_id == 5)))){
+                    if(firstTime / 1000 + 5000 > time_us_32() / 1000 || cameraInformation[i].x > centerX){
                         number = i;
                         Y = cameraInformation[i].y;
                     }
@@ -733,50 +743,50 @@ int RotationToObject(){
             continue;
         }
         //カメラの画像は反転していることに注意
-        if(cameraInformation[number].x > centorX){
+        if(cameraInformation[number].x > centerX){
             //左側にある　→　反時計回りに回転
             if(gpio_get(touch_sensor_back_left_pin)){
                 //左壁に当たっている
-                if((cameraInformation[number].x - centorX) * 2 > 400){
+                if((cameraInformation[number].x - centerX) * 2 > 400){
                     MainMotorState(0,400);
-                }else if((cameraInformation[number].x - centorX) * 2 < 25){
+                }else if((cameraInformation[number].x - centerX) * 2 < 25){
                     MainMotorState(0,25);
                 }else{
-                    MainMotorState(0,(cameraInformation[number].x - centorX) * 2);
+                    MainMotorState(0,(cameraInformation[number].x - centerX) * 2);
                 }
             }else{
                 //左壁に当たってない
-                if((cameraInformation[number].x - centorX) * 2 > 400){
+                if((cameraInformation[number].x - centerX) * 2 > 400){
                     MainMotorState(-400,400);
-                }else if((cameraInformation[number].x - centorX) * 2 < 25){
+                }else if((cameraInformation[number].x - centerX) * 2 < 25){
                     MainMotorState(-25,25);
                 }else{
-                    MainMotorState((cameraInformation[number].x - centorX) * -2,(cameraInformation[number].x - centorX) * 2);
+                    MainMotorState((cameraInformation[number].x - centerX) * -2,(cameraInformation[number].x - centerX) * 2);
                 }
             }
         }else{
             //右側にある　→　時計回りに回転
             if(gpio_get(touch_sensor_back_right_pin)){
                 //右壁に当たっている
-                if((cameraInformation[number].x - centorX) * 2 > 400){
+                if((cameraInformation[number].x - centerX) * 2 > 400){
                     MainMotorState(400,0);
-                }else if((cameraInformation[number].x - centorX) * 2 < 25){
+                }else if((cameraInformation[number].x - centerX) * 2 < 25){
                     MainMotorState(25,0);
                 }else{
-                    MainMotorState((cameraInformation[number].x - centorX) * 2,0);
+                    MainMotorState((cameraInformation[number].x - centerX) * 2,0);
                 }
             }else{
                 //右壁に当たってない
-                if((cameraInformation[number].x - centorX) * 2 > 400){
+                if((cameraInformation[number].x - centerX) * 2 > 400){
                     MainMotorState(400,-400);
-                }else if((cameraInformation[number].x - centorX) * 2 < 25){
+                }else if((cameraInformation[number].x - centerX) * 2 < 25){
                     MainMotorState(25,-25);
                 }else{
-                    MainMotorState((cameraInformation[number].x - centorX) * 2,(cameraInformation[number].x - centorX) * -2);
+                    MainMotorState((cameraInformation[number].x - centerX) * 2,(cameraInformation[number].x - centerX) * -2);
                 }
             }
         }
-        if(centorX - 3 < cameraInformation[number].x && cameraInformation[number].x < centorX + 3){
+        if(centerX - 3 < cameraInformation[number].x && cameraInformation[number].x < centerX + 3){
             MainMotorState(0,0);
             return cameraInformation[number].obj_id;
         }
@@ -800,16 +810,16 @@ void CatchBall(){
         num_objects = UseCamera();
         d = 999;
         for(int i = 0;i < num_objects;i++){
-            if(d > abs(cameraInformation[i].x - centorX) && 3 <= cameraInformation[i].obj_id && cameraInformation[i].obj_id <= 4){
+            if(d > abs(cameraInformation[i].x - centerX) && 3 <= cameraInformation[i].obj_id && cameraInformation[i].obj_id <= 4){
                 number = i;
-                d = abs(cameraInformation[i].x - centorX);
+                d = abs(cameraInformation[i].x - centerX);
             }
         }
         GetGyroAngleFromSub();
         now = time_us_32();
-        if(!(d == 999 && (preX > centorX + 5 || preX < centorX - 5)))catchObjectDistance += 100 * sin((angleX - 90) / 180.0 * 3.1416) * (now - prenow) / 1000.0;
+        if(!(d == 999 && (preX > centerX + 5 || preX < centerX - 5)))catchObjectDistance += 100 * sin((angleX - 90) / 180.0 * 3.1416) * (now - prenow) / 1000.0;
         prenow = now;
-        if(d == 999 && (preX > centorX + 5 || preX < centorX - 5)){
+        if(d == 999 && (preX > centerX + 5 || preX < centerX - 5)){
             MainMotorState(0,0);
             GetDistanceFromSub();
             if(distance > 260){
@@ -820,9 +830,9 @@ void CatchBall(){
         }else{
             preX = cameraInformation[number].x;
         }
-        if(preX > centorX + 5){
+        if(preX > centerX + 5){
             MainMotorState(90,110);
-        }else if(preX < centorX - 5){
+        }else if(preX < centerX - 5){
             MainMotorState(110,90);
         }else{
             MainMotorState(100,100);
@@ -856,11 +866,9 @@ void CatchBall(){
         GetColorFromSub();
         if(color == 1 || color == 3){
             SetServoAngleFromMain(servo_arm_left_and_right_pin,120);
-            objectNumber++;
             break;
         }else if(color == 2){
             SetServoAngleFromMain(servo_arm_left_and_right_pin,60);
-            objectNumber++;
             break;
         }
         if(colorTime + 1000000 < time_us_32()){
@@ -875,6 +883,7 @@ void CatchBall(){
         }
         sleep_ms(10);
     }
+    objectNumber++;
     sleep_ms(1000);
     SetSuctionMotorSpeedFromMain(0);
     sleep_ms(2000);
@@ -885,7 +894,7 @@ void CatchBall(){
     sleep_ms(500);
 }
 
-void CatchCan(){
+void CatchVerticalCan(){
     //tofで探す
     SetServoAngleFromMain(servo_arm_up_and_down_pin,60);
     SetServoAngleFromMain(servo_arm_left_and_right_pin,90);
@@ -903,16 +912,16 @@ void CatchCan(){
         num_objects = UseCamera();
         d = 999;
         for(int i = 0;i < num_objects;i++){
-            if(d > abs(cameraInformation[i].x - centorX) && 5 <= cameraInformation[i].obj_id && cameraInformation[i].obj_id <= 6){
+            if(d > abs(cameraInformation[i].x - centerX) && 5 <= cameraInformation[i].obj_id && cameraInformation[i].obj_id <= 6){
                 number = i;
-                d = abs(cameraInformation[i].x - centorX);
+                d = abs(cameraInformation[i].x - centerX);
             }
         }
         GetGyroAngleFromSub();
         now = time_us_32();
-        if(!(d == 999 && (preX > centorX + 5 || preX < centorX - 5)))catchObjectDistance += 100 * sin((angleX - 90) / 180.0 * 3.1416) * (now - prenow) / 1000.0;
+        if(!(d == 999 && (preX > centerX + 5 || preX < centerX - 5)))catchObjectDistance += 100 * sin((angleX - 90) / 180.0 * 3.1416) * (now - prenow) / 1000.0;
         prenow = now;
-        if(d == 999 && (preX > centorX + 5 || preX < centorX - 5)){
+        if(d == 999 && (preX > centerX + 5 || preX < centerX - 5)){
             MainMotorState(0,0);
             GetDistanceFromSub();
             if(distance > 260){
@@ -923,9 +932,9 @@ void CatchCan(){
         }else{
             preX = cameraInformation[number].x;
         }
-        if(preX > centorX + 5){
+        if(preX > centerX + 5){
             MainMotorState(90,110);
-        }else if(preX < centorX - 5){
+        }else if(preX < centerX - 5){
             MainMotorState(110,90);
         }else{
             MainMotorState(100,100);
@@ -961,8 +970,8 @@ void CatchCan(){
     SetServoAngleFromMain(servo_right_claw_pin,140);
     sleep_ms(1000);
     SetServoAngleFromMain(servo_arm_up_and_down_pin,50);
-    GetColorFromSub();
-    if(color == 1 || color == 3){
+    GetCurrentFromSub();
+    if(current[0] + current[1] > 500){
         canNumber += 1;
         objectNumber++;
     }
@@ -973,20 +982,102 @@ void CatchCan(){
     SetServoAngleFromMain(servo_arm_up_and_down_pin,60);
     sleep_ms(500);
     if(canNumber == 1){
-        SetServoAngleFromMain(servo_centor_basket_pin,150);
+        SetServoAngleFromMain(servo_center_basket_pin,150);
         sleep_ms(200);
-        SetServoAngleFromMain(servo_centor_basket_pin,140);
+        SetServoAngleFromMain(servo_center_basket_pin,140);
         sleep_ms(200);
-        SetServoAngleFromMain(servo_centor_basket_pin,130);
+        SetServoAngleFromMain(servo_center_basket_pin,130);
         sleep_ms(200);
-        SetServoAngleFromMain(servo_centor_basket_pin,120);
+        SetServoAngleFromMain(servo_center_basket_pin,120);
         sleep_ms(500);
-        SetServoAngleFromMain(servo_centor_basket_pin,160);
+        SetServoAngleFromMain(servo_center_basket_pin,160);
         sleep_ms(500);
-        SetServoOffFromMain(servo_centor_basket_pin);
+        SetServoOffFromMain(servo_center_basket_pin);
     }
 }
 
+void CatchHorizonCan(){
+    //tofで探す
+    SetServoAngleFromMain(servo_arm_up_and_down_pin,60);
+    SetServoAngleFromMain(servo_arm_left_and_right_pin,90);
+    SetServoAngleFromMain(servo_left_claw_pin,160);
+    SetServoAngleFromMain(servo_right_claw_pin,20);
+    uint32_t tofTime = time_us_32();
+    SetStepperON();
+    int num_objects,d,number;
+    catchObjectDistance = 0.0;
+    uint32_t prenow,now;
+    prenow = time_us_32();
+    int preX;
+    do{
+        PrintDisplayMode();
+        num_objects = UseCamera();
+        d = 999;
+        for(int i = 0;i < num_objects;i++){
+            if(d > abs(cameraInformation[i].x - centerX) && 5 <= cameraInformation[i].obj_id && cameraInformation[i].obj_id <= 6){
+                number = i;
+                d = abs(cameraInformation[i].x - centerX);
+            }
+        }
+        GetGyroAngleFromSub();
+        now = time_us_32();
+        if(!(d == 999 && (preX > centerX + 5 || preX < centerX - 5)))catchObjectDistance += 100 * sin((angleX - 90) / 180.0 * 3.1416) * (now - prenow) / 1000.0;
+        prenow = now;
+        if(d == 999 && (preX > centerX + 5 || preX < centerX - 5)){
+            MainMotorState(0,0);
+            GetDistanceFromSub();
+            if(distance > 260){
+                tofTime = time_us_32();
+            }
+            SendBufferToDisplay();
+            continue;
+        }else{
+            preX = cameraInformation[number].x;
+        }
+        if(preX > centerX + 5){
+            MainMotorState(90,110);
+        }else if(preX < centerX - 5){
+            MainMotorState(110,90);
+        }else{
+            MainMotorState(100,100);
+        }
+        GetDistanceFromSub();
+        if(distance == 0xFFFF){
+            MainMotorState(0,0);
+        }
+        if(distance > 260){
+            tofTime = time_us_32();
+        }
+        SendBufferToDisplay();
+    }while(tofTime + 100000 > time_us_32() || distance > 250);
+    MainMotorState(0,0);
+    SetServoAngleFromMain(servo_arm_up_and_down_pin,155);
+    sleep_ms(1000);
+    SetServoAngleFromMain(servo_arm_up_and_down_pin,168);
+    sleep_ms(250);
+    //少し前進する？
+    firstTime = time_us_32();
+    while(time_us_32() / 1000 < firstTime / 1000 + 1000){
+        PrintDisplayMode();
+        GetGyroAngleFromSub();
+        if((time_us_32() - firstTime) / 2000 > 100){
+            MainMotorState(100 ,100);
+        }else{
+            MainMotorState((int)(time_us_32() - firstTime) / 2000,(int)(time_us_32() - firstTime) / 2000);
+        }
+        SendBufferToDisplay();
+    }
+    MainMotorState(0,0);
+    GetCurrentFromSub();
+    int standardCurrent = current[0] + current[1];
+    int servoAngle = 160;
+    while(servoAngle >= 40 && current[0] + current[1] < standardCurrent + 500){
+        SetServoAngleFromMain(servo_left_claw_pin,servoAngle);
+        SetServoAngleFromMain(servo_right_claw_pin,180 - servoAngle);
+        sleep_ms(100);
+        GetCurrentFromSub();
+    }
+}
 //objectは赤ボールが1,青ボールが2,缶が3
 //赤ボールの時だけ終了時が十字条件を満たさない
 void TrashfromBasket(int object){
@@ -1015,7 +1106,7 @@ void TrashfromBasket(int object){
     }else if(object == 2){
         basket = servo_right_basket_pin;
     }else if(object == 3){
-        basket = servo_centor_basket_pin;
+        basket = servo_center_basket_pin;
     }
     SetServoAngleFromMain(basket,80);
     sleep_ms(1000);
@@ -1073,7 +1164,6 @@ void CatchPetBottle(){
         firstTime = time_us_32();
         while(lineNumber < 4){
             PrintDisplayMode();
-            GetDistanceFromSub();
             GetGyroAngleFromSub();
             GetDataFromLineToMain();
             circleLineAngle = GetCircleLineVector(20,true,true);
@@ -1082,6 +1172,15 @@ void CatchPetBottle(){
             }else{
                 MainMotorState((int)(time_us_32() - firstTime) / 2000 - (int)((angleX - 180) * 10),(int)(time_us_32() - firstTime) / -2000 + (int)((angleX - 180) * 10));
             }
+            SendBufferToDisplay();
+        }
+        firstTime = time_us_32();
+        while((time_us_32() - firstTime) / 1000 < 1000){
+            PrintDisplayMode();
+            GetGyroAngleFromSub();
+            GetDataFromLineToMain();
+            circleLineAngle = GetCircleLineVector(20,true,true);
+            MainMotorState(100 - (int)((angleX - 180) * 10),100 + (int)((angleX - 180) * 10));
             SendBufferToDisplay();
         }
     }

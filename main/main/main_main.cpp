@@ -39,12 +39,15 @@ int main(){
         if(gpio_get(tactile_switch_pin1) == true){
             CatchBall();
             sleep_ms(3000);
-            CatchCan();
+            CatchVerticalCan();
         }else if(gpio_get(tactile_switch_pin2) == true){
             //CatchPetBottle();
-            UseColorLED(0,0,255);
-            ResetGyro(0);
-            UseColorLED(0,255,0);
+            SetServoAngleFromMain(servo_arm_up_and_down_pin,155);
+            sleep_ms(1000);
+            SetServoAngleFromMain(servo_arm_up_and_down_pin,168);
+            sleep_ms(250);
+            SetServoAngleFromMain(servo_left_claw_pin,40);
+            SetServoAngleFromMain(servo_right_claw_pin,140);
         }else if(gpio_get(tactile_switch_pin3) == true){
             SetStepperON();
             sleep_ms(500);

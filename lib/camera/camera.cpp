@@ -37,12 +37,35 @@ int UseCamera() {
     }
 
     if (data_length > 0) {
-        if(data_length > 64 || data_length % 3 != 0){
+        if(data_length > 64){
             if((serialWatch == "cam1" || serialWatch == "cam2") && isUseDisplay){
                 snprintf(displayBuffer,displayBufferSize,"DataLength");
                 WriteTextOnDisplay(5,30,displayBuffer,12,false,false);  
-                snprintf(displayBuffer,displayBufferSize,"error");
+                snprintf(displayBuffer,displayBufferSize,"too long");
                 WriteTextOnDisplay(5,45,displayBuffer,12,false,false);  
+            }
+            uint32_t cameraTime = time_us_32();
+            while(uart_is_readable(camera_uart) || (time_us_32() - cameraTime) / 1000 < 10){
+                if(uart_is_readable(camera_uart)){
+                    uint8_t gomi = uart_getc(camera_uart);
+                    cameraTime = time_us_32();
+                }
+            }
+            return 666;
+        }
+        if(data_length % 3 != 0){
+            if((serialWatch == "cam1" || serialWatch == "cam2") && isUseDisplay){
+                snprintf(displayBuffer,displayBufferSize,"DataLength");
+                WriteTextOnDisplay(5,30,displayBuffer,12,false,false);  
+                snprintf(displayBuffer,displayBufferSize,"not 3*");
+                WriteTextOnDisplay(5,45,displayBuffer,12,false,false);  
+            }
+            uint32_t cameraTime = time_us_32();
+            while(uart_is_readable(camera_uart) || (time_us_32() - cameraTime) / 1000 < 10){
+                if(uart_is_readable(camera_uart)){
+                    uint8_t gomi = uart_getc(camera_uart);
+                    cameraTime = time_us_32();
+                }
             }
             return 666;
         }

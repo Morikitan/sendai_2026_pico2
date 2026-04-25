@@ -210,6 +210,9 @@ void GetColorFromSub(){
 }
 
 //メインマイコンがサブマイコンからcurrentを取得する関数
+//        left  : 0
+//        right : 1
+//        DC    : 2 
 void GetCurrentFromSub(){
     uart_write_blocking(main_to_sub_uart,(uint8_t[]){0x04},1);
     uart_read_blocking(main_to_sub_uart,currentBuffer,6);
