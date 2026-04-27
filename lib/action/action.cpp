@@ -31,6 +31,7 @@ float VectorAbsoluteValue;
 float jujiAngle;
 float TjiAngle;
 int objectNumber;
+bool isCatchHorizonCan;
 
 #define RightCircleLine circleLineSensor[11] + circleLineSensor[12] + circleLineSensor[13] + circleLineSensor[14] + circleLineSensor[15] + circleLineSensor[16] + circleLineSensor[17] + circleLineSensor[18] + circleLineSensor[19]
 #define LeftCircleLine circleLineSensor[1] + circleLineSensor[2] + circleLineSensor[3] + circleLineSensor[4] + circleLineSensor[5] + circleLineSensor[6] + circleLineSensor[7] + circleLineSensor[8] + circleLineSensor[9]
@@ -48,6 +49,7 @@ void LineTraceSetup(){
     TjiAngle = 0;
     speed = 30;
     objectNumber = 0;
+    isCatchHorizonCan = false;
 }
 
 //ブザーを鳴らす　count:回数　length:0で短1で長
@@ -128,16 +130,14 @@ void MainMove(){
         //ボールと缶を合わせて4つとって線上に復帰する
         int objID;
         while(objectNumber < 5){
-            objID = RotationToObject();
+            objID = RotationToObject(false);
             if(objID == 999){
                 break;
             }
             if(objID == 3 || objID == 4){
                 CatchBall();
-            }else if(objID == 5){
+            }else if(objID == 5 || objID == 6){
                 CatchVerticalCan();
-            }else if(objID == 6){
-                CatchHorizonCan();
             }
             UseColorLED(0,0,0);
             BackToLine();
@@ -281,7 +281,7 @@ void MainMove(){
     }else if(lineNumber < 16){//残りを全部取りきる
         int objID;
         while(objectNumber < 7){
-            objID = RotationToObject();
+            objID = RotationToObject(false);
             if(objectNumber == 999){
                 while((time_us_32() - firstTime) / 1000 < 250){
                     PrintDisplayMode();
@@ -293,12 +293,8 @@ void MainMove(){
             }
             if(objID == 3 || objID == 4){
                 CatchBall();
-                objectNumber++;
             }else if(objID == 5 || objID == 6){
                 CatchVerticalCan();
-                objectNumber++;
-            }else{
-
             }
             UseColorLED(0,0,0);
             RotationToAngle(90);
@@ -329,7 +325,36 @@ void MainMove(){
         MainMotorState(0,0);
         sleep_ms(200);
         ResetGyro(0);
-        sleep_ms(1000000);
+        lineNumber++;
+    }else if(lineNumber < 17){
+        int objID;
+        while(!isCatchHorizonCan){
+            objID = RotationToObject(true);
+            if(objID == 999){
+                break;
+            }
+            if(objID == 3 || objID == 4){
+                CatchBall();
+            }else if(objID == 5 || objID == 6){
+                CatchVerticalCan();
+            }
+            UseColorLED(0,0,0);
+            BackToLine();
+            RotationToAngle(180);
+            if(objectNumber == 5){
+                firstTime = time_us_32();
+                while((time_us_32() - firstTime) / 1000 < 250){
+                    PrintDisplayMode();
+                    MainMotorState(-100,-100);
+                    SendBufferToDisplay();
+                }
+                MainMotorState(0,0);
+                sleep_ms(200);
+                ResetGyro(180);
+            }else{
+                OnWall(180);
+            }
+        }
     }
 }
 
@@ -650,8 +675,8 @@ void RotationToAngle(int target_angle){
 }
 
 //0°と360°の境目で使用禁止
-//angle : trueなら右側を向く
-int RotationToObject(){
+// isHorizonCan : 横缶のみを探すかどうか
+int RotationToObject(bool isHorizonCan){
     firstTime = time_us_32();
     int isGreaterThancenterX; // 0が初期状態。1が大きい。2が小さい。
     int decidedObj_id;
@@ -665,7 +690,7 @@ int RotationToObject(){
     rotationTime = time_us_32();
     firstRotationTime = rotationTime;
     retireNumber = 0;
-    while((time_us_32() - rotationTime) / 1000 < 500){
+    while((time_us_32() - rotationTime) / 1000 < 5000000){
         PrintDisplayMode();
         int num_objects = 0;
         num_objects = UseCamera();
@@ -724,10 +749,11 @@ int RotationToObject(){
             num_objects = UseCamera();
         }while(num_objects > 100);//100より大きい数はエラー信号
         Y = 999,number = 0;
+        // カメラは反転しているのでYが小さいほど手前にある
         for(int i = 0;i < num_objects;i++){
             if(Y > cameraInformation[i].y && 3 <= cameraInformation[i].obj_id && cameraInformation[i].obj_id <= 6){
-                if((((isGreaterThancenterX == 1 && cameraInformation[i].x > centerX - 5) || (isGreaterThancenterX == 2 && cameraInformation[i].x < centerX + 5)) && (cameraInformation[i].obj_id == decidedObj_id || (cameraInformation[i].obj_id == 5 && decidedObj_id == 6) || (cameraInformation[i].obj_id == 6 && decidedObj_id == 5)))){
-                    if(firstTime / 1000 + 5000 > time_us_32() / 1000 || cameraInformation[i].x > centerX){
+                if(((isGreaterThancenterX == 1 && cameraInformation[i].x > centerX - 5) || (isGreaterThancenterX == 2 && cameraInformation[i].x < centerX + 5)) && (cameraInformation[i].obj_id == decidedObj_id || (cameraInformation[i].obj_id == 5 && decidedObj_id == 6) || (cameraInformation[i].obj_id == 6 && decidedObj_id == 5))){
+                    if((firstTime / 1000 + 5000) > time_us_32() / 1000 || cameraInformation[i].x > centerX){
                         number = i;
                         Y = cameraInformation[i].y;
                     }
@@ -742,7 +768,7 @@ int RotationToObject(){
             if(gotoNumber > 50) goto Find;
             continue;
         }
-        //カメラの画像は反転していることに注意
+        //カメラの画像は上下左右反転していることに注意
         if(cameraInformation[number].x > centerX){
             //左側にある　→　反時計回りに回転
             if(gpio_get(touch_sensor_back_left_pin)){
@@ -848,8 +874,8 @@ void CatchBall(){
     }while(tofTime + 100000 > time_us_32());
     MainMotorState(0,0);
     SetServoAngleFromMain(servo_arm_up_and_down_pin,155);
-    SetServoAngleFromMain(servo_left_claw_pin,160);
-    SetServoAngleFromMain(servo_right_claw_pin,20);
+    SetServoAngleFromMain(servo_left_claw_pin,150);
+    SetServoAngleFromMain(servo_right_claw_pin,30);
     sleep_ms(1000);
     SetServoAngleFromMain(servo_arm_up_and_down_pin,168);
     sleep_ms(1000);
@@ -1026,7 +1052,7 @@ void CatchHorizonCan(){
         if(d == 999 && (preX > centerX + 5 || preX < centerX - 5)){
             MainMotorState(0,0);
             GetDistanceFromSub();
-            if(distance > 260){
+            if(cameraInformation[number].y > 115){
                 tofTime = time_us_32();
             }
             SendBufferToDisplay();
@@ -1045,11 +1071,11 @@ void CatchHorizonCan(){
         if(distance == 0xFFFF){
             MainMotorState(0,0);
         }
-        if(distance > 260){
+        if(cameraInformation[number].y > 115){
             tofTime = time_us_32();
         }
         SendBufferToDisplay();
-    }while(tofTime + 100000 > time_us_32() || distance > 250);
+    }while(tofTime + 100000 > time_us_32() || cameraInformation[number].y > 115);
     MainMotorState(0,0);
     SetServoAngleFromMain(servo_arm_up_and_down_pin,155);
     sleep_ms(1000);
@@ -1071,12 +1097,17 @@ void CatchHorizonCan(){
     GetCurrentFromSub();
     int standardCurrent = current[0] + current[1];
     int servoAngle = 160;
-    while(servoAngle >= 40 && current[0] + current[1] < standardCurrent + 500){
+    while(servoAngle >= 30 && current[0] + current[1] < standardCurrent + 1000){
+        PrintDisplayMode();
         SetServoAngleFromMain(servo_left_claw_pin,servoAngle);
         SetServoAngleFromMain(servo_right_claw_pin,180 - servoAngle);
-        sleep_ms(100);
+        sleep_ms(50);
         GetCurrentFromSub();
+        servoAngle -= 10;
+        SendBufferToDisplay();
     }
+    if(servoAngle > 20) isCatchHorizonCan = true;
+    SetServoAngleFromMain(servo_arm_up_and_down_pin,90);
 }
 //objectは赤ボールが1,青ボールが2,缶が3
 //赤ボールの時だけ終了時が十字条件を満たさない
