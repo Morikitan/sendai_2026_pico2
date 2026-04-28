@@ -5,25 +5,23 @@ extern "C" {
 #endif
 
 void LineTraceSetup();
-void BuzzerRing(int times, int length);
-void RotationToAngle(int target_angle);
 void MainMove();
-// void LineTrace();
-void NewLineTrace();
 void BackLineTrace();
 void BackToLine();
-void StraightLineTrace(int angle,int speed2);
-int RotationToObject(bool isHorizonCan);
-void CatchPetBottle();
+void BuzzerRing(int times, int length);
 void CatchBall();
-void CatchVerticalCan();
 void CatchHorizonCan();
+void CatchPetBottle();
+void CatchVerticalCan();
+void NewLineTrace();
+void OnWall(int angle);
+void PassTheSpace();
+void RotationToAngle(int target_angle);
+int RotationToObject(bool isHorizonCan);
+void StraightLineTrace(int angle,int speed2);
 void TrashfromBasket(int object);
 void UseAllSensor();
-void PassTheSpace();
 float GetCircleLineVector(int number,bool isFrontLine,bool isGetJuji);
-void OnWall(int angle);
-
 #ifdef __cplusplus
 }
 #endif

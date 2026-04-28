@@ -35,14 +35,15 @@ int main(){
     // SetSuctionMotorSpeedFromMain(75);//30%
     UseColorLED(0,255,0);
     while(true){
-        
         if(gpio_get(tactile_switch_pin1) == true){
             CatchBall();
             sleep_ms(3000);
             CatchVerticalCan();
         }else if(gpio_get(tactile_switch_pin2) == true){
             //CatchPetBottle();
-            CatchHorizonCan();
+            ResetGyro(180);
+            SetStepperON();
+            CatchPetBottle();
         }else if(gpio_get(tactile_switch_pin3) == true){
             SetStepperON();
             sleep_ms(500);
