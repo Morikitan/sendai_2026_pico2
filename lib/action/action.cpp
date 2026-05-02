@@ -1376,6 +1376,51 @@ void TrashfromBasket(int object){
     }
 }
 
+void TrashHorizonCan(){
+    RotationToAngle(270):
+    GetDataFromLineToMain();
+    circleLineAngle = GetCircleLineVector(20,true,true);
+    firstTime = time_us_32();
+    //ゴールまで進む
+    while(!circleLineSensor[7] || !circleLineSensor[12] || (time_us_32() - firstTime) / 1000 < 750){
+        PrintDisplayMode();
+        GetGyroAngleFromSub();
+        GetDataFromLineToMain();
+        circleLineAngle = GetCircleLineVector(20,true,true);
+        if((time_us_32() - firstTime) / 2000 > 200){
+            MainMotorState(200 + (int)((angleX - 270) * 10),200 - (int)((angleX - 270) * 10));
+        }else{
+            MainMotorState((int)(time_us_32() - firstTime) / 2000 + (int)((angleX - 270) * 10),(int)(time_us_32() - firstTime) / 2000 - (int)((angleX - 270) * 10));
+        }
+        SendBufferToDisplay();
+    }
+    MainMotorState(0,0);
+
+    //捨てる
+    SetServoAngleFromMain(servo_arm_left_and_right_pin,90);
+    SetServoAngleFromMain(servo_arm_up_and_down_pin,160);
+    sleep_ms(500);
+    SetServoAngleFromMain(servo_left_claw_pin,160);
+    SetServoAngleFromMain(servo_right_claw_pin,20);
+    
+    //線上に復帰
+    firstTime = time_us_32();
+    while(VectorNumber != 4  || (time_us_32() - firstTime) / 1000 < 750){
+        PrintDisplayMode();
+        GetGyroAngleFromSub();
+        GetDataFromLineToMain();
+        circleLineAngle = GetCircleLineVector(20,true,true);
+        if((time_us_32() - firstTime) / 2000 > 200){
+            MainMotorState(-200 + (int)((angleX - 270) * 10),200 - (int)((angleX - 270) * 10));
+        }else{
+            MainMotorState((int)(time_us_32() - firstTime) / -2000 + (int)((angleX - 270) * 10),(int)(time_us_32() - firstTime) / -2000 - (int)((angleX - 270) * 10));
+        }
+        SendBufferToDisplay();
+    }
+    MainMotorState(0,0);
+    RotationToAngle(180):
+}
+
 //カメラ、ラインセンサ、ジャイロ、tof、カラーセンサ、電流センサを使う
 void UseAllSensor(){
     UseCamera();

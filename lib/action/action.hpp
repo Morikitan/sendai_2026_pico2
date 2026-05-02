@@ -20,6 +20,7 @@ void RotationToAngle(int target_angle);
 int RotationToObject(bool isHorizonCan);
 void StraightLineTrace(int angle,int speed2);
 void TrashfromBasket(int object);
+void TrashHorizonCan();
 void UseAllSensor();
 float GetCircleLineVector(int number,bool isFrontLine,bool isGetJuji);
 #ifdef __cplusplus

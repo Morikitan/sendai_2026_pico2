@@ -40,10 +40,10 @@ int main(){
             sleep_ms(3000);
             CatchVerticalCan();
         }else if(gpio_get(tactile_switch_pin2) == true){
-            //CatchPetBottle();
-            ResetGyro(180);
+            //ResetGyro(180);
             SetStepperON();
-            CatchPetBottle();
+            //CatchPetBottle();
+            TrashHorizonCan();
         }else if(gpio_get(tactile_switch_pin3) == true){
             SetStepperON();
             sleep_ms(500);
