@@ -1386,16 +1386,11 @@ void TrashHorizonCan(){
     circleLineAngle = GetCircleLineVector(20,true,true);
     firstTime = time_us_32();
     //ゴールまで進む
-    while(!circleLineSensor[7] || !circleLineSensor[12] || (time_us_32() - firstTime) / 1000 < 750){
+    while(!frontLineSensor[0] || !frontLineSensor[2]){
         PrintDisplayMode();
         GetGyroAngleFromSub();
         GetDataFromLineToMain();
-        circleLineAngle = GetCircleLineVector(20,true,true);
-        if((time_us_32() - firstTime) / 2000 > 200){
-            MainMotorState(200 + (int)((angleX - 270) * 10),200 - (int)((angleX - 270) * 10));
-        }else{
-            MainMotorState((int)(time_us_32() - firstTime) / 2000 + (int)((angleX - 270) * 10),(int)(time_us_32() - firstTime) / 2000 - (int)((angleX - 270) * 10));
-        }
+        MainMotorState(200,200);
         SendBufferToDisplay();
     }
     MainMotorState(0,0);
@@ -1406,20 +1401,18 @@ void TrashHorizonCan(){
     sleep_ms(500);
     SetServoAngleFromMain(servo_left_claw_pin,160);
     SetServoAngleFromMain(servo_right_claw_pin,20);
+    sleep_ms(1000);
+    SetServoAngleFromMain(servo_arm_up_and_down_pin,90);
+    sleep_ms(1000);
     
     //線上に復帰
     firstTime = time_us_32();
-    while(VectorNumber != 4  || (time_us_32() - firstTime) / 1000 < 750){
+    while(!circleLineSensor[4] || !circleLineSensor[15]){
         PrintDisplayMode();
         GetGyroAngleFromSub();
         GetDataFromLineToMain();
-        circleLineAngle = GetCircleLineVector(20,true,true);
-        if((time_us_32() - firstTime) / 2000 > 200){
-            MainMotorState(-200 + (int)((angleX - 270) * 10),200 - (int)((angleX - 270) * 10));
-        }else{
-            MainMotorState((int)(time_us_32() - firstTime) / -2000 + (int)((angleX - 270) * 10),(int)(time_us_32() - firstTime) / -2000 - (int)((angleX - 270) * 10));
-        }
         SendBufferToDisplay();
+        MainMotorState(-200,-200);
     }
     MainMotorState(0,0);
     RotationToAngle(180);
