@@ -67,7 +67,7 @@ void PrintDisplayMode(){
     if(displayMode == 1){
         serialWatch = "hom";
         WriteTextOnDisplay(5,15,"<Home>",12,true,false);
-        snprintf(displayBuffer,displayBufferSize,"%d",lineNumber);
+        snprintf(displayBuffer,displayBufferSize,"%d",task);
         WriteTextOnDisplay(5,30,displayBuffer,12,false,false);
     }else if(displayMode == 2){
         serialWatch = "cam1";

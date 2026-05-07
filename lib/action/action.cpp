@@ -16,12 +16,12 @@
 
 #define centerX 168 // カメラの中心のX座標
 
-int lineNumber;
+int task;
 int preLineAngle;
 int lineAngle;//0,90,180,270が入る本来、車体が直線上であるべき角度
 int lastLineTime; //ミリ秒
 bool isLineBuzzerOn;
-float circleLineAngle;//実際の線の角度1
+float circleLineAngle;//実際の線の角度1 -999でlineがない
 float catchObjectDistance;//進んだ距離
 bool isCatchHorizonCan;//横缶を取ったか
 int speed;
@@ -42,7 +42,7 @@ int objectNumber;
 
 //ライントレースに関する変数の初期化
 void LineTraceSetup(){
-    lineNumber = 0;
+    task = 0;
     preLineAngle = 0;
     lineAngle = 0;
     lastLineTime = 0;
@@ -53,10 +53,10 @@ void LineTraceSetup(){
     isCatchHorizonCan = false;
 }
 
-//LineNumberによって規定されるメインの動き
+//taskによって規定されるメインの動き
 void MainMove(){
-    if(lineNumber == 0 || lineNumber == 1){ //ライン上まで移動
-        if(lineNumber == 0) firstTime = time_us_32();
+    if(task == 0 || task == 1){ //ライン上まで移動
+        if(task == 0) firstTime = time_us_32();
         do{
             PrintDisplayMode();
             GetDataFromLineToMain();
@@ -84,8 +84,8 @@ void MainMove(){
         gpio_put(buzzer_pin,1);
         sleep_ms(200);
         gpio_put(buzzer_pin,0);
-        lineNumber++;
-        if(lineNumber == 2){
+        task++;
+        if(task == 2){
             firstTime = time_us_32();
             while((time_us_32() - firstTime) / 1000 < 750){
                 PrintDisplayMode();
@@ -93,18 +93,18 @@ void MainMove(){
                 SendBufferToDisplay();
             }
         }
-    }else if(lineNumber < 4){//ライントレース
+    }else if(task < 4){//ライントレース
         NewLineTrace();
-    }else if(lineNumber < 5){//ライントレース～カメラ使用位置まで
+    }else if(task < 5){//ライントレース～カメラ使用位置まで
         if(time_us_32() / 1000 < lastLineTime + 40000 / speed){
             NewLineTrace();
         }else{
             StraightLineTrace(90,speed);
             if(circleLineAngle < -999){
-                lineNumber = 5;
+                task = 5;
             }
         }
-    }else if(lineNumber < 6){//Dエリアの缶とボールとってからペットボトルとる
+    }else if(task < 6){//Dエリアの缶とボールとってからペットボトルとる
         MainMotorState(0,0);
         gpio_put(buzzer_pin,1);
         sleep_ms(500);
@@ -146,14 +146,14 @@ void MainMove(){
         UseColorLED(0,0,0);
         BackToLine();
         RotationToAngle(180);
-        lineNumber++;
+        task++;
         preLineAngle = 180;
         lineAngle = 180;
         sleep_ms(500);
         UseColorLED(0,0,0);
-    }else if(lineNumber < 7){//後ろライントレース
+    }else if(task < 7){//後ろライントレース
         BackLineTrace();
-    }else if(lineNumber < 8){//壁あてしてジャイロのリセット
+    }else if(task < 8){//壁あてしてジャイロのリセット
         gpio_put(buzzer_pin,0);
         MainMotorState(0,0);
         GetGyroAngleFromSub();
@@ -187,7 +187,7 @@ void MainMove(){
             }else{
                 MainMotorState((int)(time_us_32() - firstTime) / 2000 - (int)((angleX - 180) * 10),(int)(time_us_32() - firstTime) / 2000 + (int)((angleX - 180) * 10));
             }
-            if(circleLineAngle < -999 || VectorAbsoluteValue > 0.4 || (30 < ((int)circleLineAngle % 180) && ((int)circleLineAngle % 180) < 150 && lineNumber < 3) || (circleLineSensor[5] == 0 && circleLineSensor[15] == 0 && lineNumber > 2)){
+            if(circleLineAngle < -999 || VectorAbsoluteValue > 0.4 || (30 < ((int)circleLineAngle % 180) && ((int)circleLineAngle % 180) < 150 && task < 3) || (circleLineSensor[5] == 0 && circleLineSensor[15] == 0 && task > 2)){
                 nowTime = time_us_32() / 1000;
             }
             SendBufferToDisplay();
@@ -197,36 +197,36 @@ void MainMove(){
         sleep_ms(500);
         gpio_put(buzzer_pin,0);
         lastLineTime = time_us_32() / 1000;
-        lineNumber++;
-    }else if(lineNumber < 9){//後ろライントレース
+        task++;
+    }else if(task < 9){//後ろライントレース
         BackLineTrace();
-    }else if(lineNumber < 10){//青ボールの排出
+    }else if(task < 10){//青ボールの排出
         MainMotorState(0,0);
         gpio_put(buzzer_pin,1);
         sleep_ms(500);
         gpio_put(buzzer_pin,0);
         TrashfromBasket(2);
-        lineNumber++;
+        task++;
         preLineAngle = 90;
         lineAngle = 90;
         sleep_ms(500);
         lastLineTime = time_us_32() / 1000;
-    }else if(lineNumber < 11){//後ろライントレース
+    }else if(task < 11){//後ろライントレース
         BackLineTrace();
-    }else if(lineNumber < 12){//缶の排出
+    }else if(task < 12){//缶の排出
         MainMotorState(0,0);
         gpio_put(buzzer_pin,1);
         sleep_ms(500);
         gpio_put(buzzer_pin,0);
         TrashfromBasket(3);
-        lineNumber++;
+        task++;
         preLineAngle = 180;
         lineAngle = 180;
         sleep_ms(500);
         lastLineTime = time_us_32() / 1000;
-    }else if(lineNumber < 13){//ライントレース
+    }else if(task < 13){//ライントレース
         NewLineTrace();
-    }else if(lineNumber < 14){//赤ボールの排出 →　壁あてしてジャイロのリセット
+    }else if(task < 14){//赤ボールの排出 →　壁あてしてジャイロのリセット
         MainMotorState(0,0);
         gpio_put(buzzer_pin,1);
         sleep_ms(500);
@@ -239,6 +239,7 @@ void MainMove(){
             MainMotorState(-100,- 100);
             SendBufferToDisplay();
         }
+        MainMotorState(0,0);
         ResetGyro(0);
         firstTime = time_us_32();
         do{
@@ -253,17 +254,20 @@ void MainMove(){
                 MainMotorState((int)(time_us_32() - firstTime) / 2000 - (int)(angleX * 10),(int)(time_us_32() - firstTime) / 2000 + (int)(angleX * 10));
             }
             SendBufferToDisplay();
-        }while(lineNumber < 3 || circleLineAngle < -999);
+        }while(VectorNumber < 3 || circleLineAngle < -999);
         MainMotorState(0,0);
-        lineNumber++;
+        task++;
         preLineAngle = 0;
         lineAngle = 0;
-    }else if(lineNumber < 15){//島と壁の間を抜ける
+        gpio_put(buzzer_pin,1);
+        sleep_ms(500);
+        gpio_put(buzzer_pin,0);
+    }else if(task < 15){//島と壁の間を抜ける
         uint8_t cmd = 0x11;
         uart_write_blocking(camera_uart,&cmd,1);
         PassTheSpace();
-        lineNumber++;
-    }else if(lineNumber < 16){//Bエリアのボールと缶を取る
+        task++;
+    }else if(task < 16){//Bエリアのボールと缶を取る
         int objID;
         while(objectNumber < 7){
             objID = RotationToObject(false);
@@ -310,8 +314,8 @@ void MainMove(){
         MainMotorState(0,0);
         sleep_ms(200);
         ResetGyro(0);
-        lineNumber++;
-    }else if(lineNumber < 17){//Cエリアの横缶を取る
+        task++;
+    }else if(task < 17){//Cエリアの横缶を取る
         int objID;
         while(!isCatchHorizonCan){
             objID = RotationToObject(true);
@@ -339,7 +343,7 @@ void BackLineTrace(){
         //十字の感知
         if(time_us_32() / 1000 > lastLineTime + 40000 / speed){
             gpio_put(buzzer_pin,1);
-            lineNumber++;
+            task++;
             isLineBuzzerOn = true;
             lastLineTime = time_us_32() / 1000;
         }
@@ -493,7 +497,7 @@ void BackToLine(){
         }else{
             MainMotorState((int)(time_us_32() - firstTime) / -2000 - (int)((angleX - backAngle) * 10),(int)(time_us_32() - firstTime) / -2000 + (int)((angleX - backAngle) * 10));
         }
-        if(circleLineAngle < -999 || VectorAbsoluteValue > 0.4 || (30 < ((int)circleLineAngle % 180) && ((int)circleLineAngle % 180) < 150 && lineNumber < 3) || (circleLineSensor[4] == 0 && circleLineSensor[16] == 0 && circleLineSensor[5] == 0 && circleLineSensor[15] == 0 && lineNumber > 2)){
+        if(circleLineAngle < -999 || VectorAbsoluteValue > 0.4 || (30 < ((int)circleLineAngle % 180) && ((int)circleLineAngle % 180) < 150 && task < 3) || (circleLineSensor[4] == 0 && circleLineSensor[16] == 0 && circleLineSensor[5] == 0 && circleLineSensor[15] == 0 && task > 2)){
             nowTime = time_us_32() / 1000;
         }
         SendBufferToDisplay();
@@ -714,8 +718,7 @@ void CatchPetBottle(){
     GetDataFromLineToMain();
     circleLineAngle = GetCircleLineVector(20,true,true);
     UseColorLED(255,255,255);
-    if(circleLineAngle < -999){
-        GetDistanceFromSub();
+    if(objectNumber < 5){
         firstTime = time_us_32();
         while(VectorNumber < 4){
             PrintDisplayMode();
@@ -741,6 +744,7 @@ void CatchPetBottle(){
         }
         UseColorLED(0,255,255);
     }
+    UseColorLED(255,0,255);
     GetDistanceFromSub();
     uint32_t deltaTime = 0;
     uint32_t preTime = time_us_32() / 1000;
@@ -948,15 +952,15 @@ void NewLineTrace(){
     GetDataFromLineToMain();
     GetGyroAngleFromSub();
     circleLineAngle = GetCircleLineVector(20,true,true);
-    if(VectorNumber == 4 || (TjiAngle < 999 && lineNumber > 3)){
+    if(VectorNumber == 4 || (TjiAngle < 999 && task > 3)){
         //十字の感知
         if(time_us_32() / 1000 > lastLineTime + 40000 / speed){
             gpio_put(buzzer_pin,1);
-            lineNumber++;
+            task++;
             isLineBuzzerOn = true;
             lastLineTime = time_us_32() / 1000;
-            if(lineNumber < 4 && lineAngle == 90){
-                lineNumber = 4;
+            if(task < 4 && lineAngle == 90){
+                task = 4;
             }
         }
     }
@@ -1136,7 +1140,7 @@ int RotationToObject(bool isHorizonCan){
     rotationTime = time_us_32();
     firstRotationTime = rotationTime;
     retireNumber = 0;
-    while((time_us_32() - rotationTime) / 1000 < 5000000){
+    while((time_us_32() - rotationTime) / 1000 < 500){
         PrintDisplayMode();
         int num_objects = 0;
         num_objects = UseCamera();
@@ -1147,7 +1151,7 @@ int RotationToObject(bool isHorizonCan){
         Y = 999,number = 0;
         for(int i = 0;i < num_objects;i++){
             if(Y > cameraInformation[i].y && ((3 <= cameraInformation[i].obj_id && cameraInformation[i].obj_id <= 6 && !isHorizonCan) || (5 <= cameraInformation[i].obj_id && cameraInformation[i].obj_id <= 6 && isHorizonCan))){
-                if(((rotationTime - firstRotationTime) / 1000 < 5000) || (3 <= cameraInformation[i].obj_id && cameraInformation[i].obj_id <= 4) || isHorizonCan){
+                if((rotationTime - firstRotationTime) / 1000 < 3000 || (rotationTime - firstRotationTime) / 1000 > 6000 || (3 <= cameraInformation[i].obj_id && cameraInformation[i].obj_id <= 4) || isHorizonCan){
                     number = i;
                     Y = cameraInformation[i].y;
                 }
@@ -1166,7 +1170,7 @@ int RotationToObject(bool isHorizonCan){
             SendBufferToDisplay();
             continue;
         }
-        if(decidedObj_id != cameraInformation[number].obj_id){
+        if(decidedObj_id != cameraInformation[number].obj_id && !(decidedObj_id == 5 && cameraInformation[number].obj_id == 6) && !(decidedObj_id == 6 && cameraInformation[number].obj_id == 5)){
             decidedObj_id = cameraInformation[number].obj_id;
             if(decidedObj_id == 3){
                 UseColorLED(255,0,0);
@@ -1377,7 +1381,7 @@ void TrashfromBasket(int object){
 }
 
 void TrashHorizonCan(){
-    RotationToAngle(270):
+    RotationToAngle(270);
     GetDataFromLineToMain();
     circleLineAngle = GetCircleLineVector(20,true,true);
     firstTime = time_us_32();
@@ -1418,7 +1422,7 @@ void TrashHorizonCan(){
         SendBufferToDisplay();
     }
     MainMotorState(0,0);
-    RotationToAngle(180):
+    RotationToAngle(180);
 }
 
 //カメラ、ラインセンサ、ジャイロ、tof、カラーセンサ、電流センサを使う

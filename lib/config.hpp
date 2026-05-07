@@ -155,5 +155,5 @@ extern uint8_t currentBuffer[6];
 #define buzzer_pin 22 //メインマイコン
 #define color_LED_pin 28 //メインマイコン
 extern int canNumber;
-extern int lineNumber;
+extern int task;
 extern bool isGyroReset;
