@@ -35,6 +35,9 @@ struct CameraInformation{
 //5 : 縦の缶
 //6 : 横の缶
 extern CameraInformation cameraInformation[16]; 
+extern int task;//動きを決定づける変数
+extern uint32_t allFirstTime;//競技開始時からの経過時間(μs)
+extern bool isYosen;//予選かどうか。予選だと5分,本選だと10分
 
 //display
 #define display_i2c i2c0
@@ -155,5 +158,4 @@ extern uint8_t currentBuffer[6];
 #define buzzer_pin 22 //メインマイコン
 #define color_LED_pin 28 //メインマイコン
 extern int canNumber;
-extern int task;
 extern bool isGyroReset;

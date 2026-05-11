@@ -29,7 +29,8 @@ int main(){
     LineTraceSetup();
     ColorLEDSetup();
     sleep_ms(2000);
-    SetServoAngleFromMain(servo_arm_up_and_down_pin,60);
+    SetServoAngleFromMain(servo_arm_up_and_down_pin,50);
+    SetServoAngleFromMain(servo_arm_left_and_right_pin,90);
     SetServoAngleFromMain(servo_left_claw_pin,90);
     SetServoAngleFromMain(servo_right_claw_pin,90);
     // SetSuctionMotorSpeedFromMain(75);//30%
@@ -45,6 +46,7 @@ int main(){
             CatchPetBottle();
             // TrashHorizonCan();
         }else if(gpio_get(tactile_switch_pin3) == true){
+            allFirstTime = time_us_32();
             SetStepperON();
             sleep_ms(500);
             while(true){
