@@ -10,7 +10,6 @@
 uint8_t color;
 uint16_t current[3];
 uint8_t currentBuffer[6];
-int canNumber;
 
 void ColorSensorSetup(){
     i2c_init(color_sensor_i2c, 100000);
@@ -19,7 +18,6 @@ void ColorSensorSetup(){
     gpio_init(color_sensor_LED_pin);
     gpio_set_dir(color_sensor_LED_pin, GPIO_OUT);
     gpio_put(color_sensor_LED_pin,1);
-    canNumber = 0;
     // 固定時間モード / Lowゲイン / 22.4ms
     // bit7=0 bit6=0 bit3=0 bit2=0 bit1,0=10
     write_register(REG_CONTROL, 0x02);
