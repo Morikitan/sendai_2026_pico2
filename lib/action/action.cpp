@@ -811,12 +811,30 @@ void CatchBall(bool isSuction){
         }
     }while(tofTime + 100000 > time_us_32());
     MainMotorState(0,0);
+    GetCurrentFromSub();
+    int upDownArmStandardCurrent = current[2];
     SetServoAngleFromMain(servo_arm_up_and_down_pin,155);
     SetServoAngleFromMain(servo_left_claw_pin,160);
     SetServoAngleFromMain(servo_right_claw_pin,20);
     sleep_ms(1000);
     SetServoAngleFromMain(servo_arm_up_and_down_pin,168);
     sleep_ms(500);
+    GetCurrentFromSub();
+    if(current[2] > upDownArmStandardCurrent * 2){
+        //アームが引っ掛かってる
+        SetServoAngleFromMain(servo_arm_left_and_right_pin,90);
+        SetServoAngleFromMain(servo_arm_up_and_down_pin,120);
+        sleep_ms(500);
+        GetGyroAngleFromSub();
+        if(angleX > 180){
+            RotationToAngle((int)(angleX - 7));
+            SetServoAngleFromMain(servo_arm_left_and_right_pin,80);
+        }else{
+            RotationToAngle((int)(angleX + 7));
+            SetServoAngleFromMain(servo_arm_left_and_right_pin,100);
+        }
+        sleep_ms(100);
+    }
     if(isSuction){
         SetSuctionMotorSpeedFromMain(150);
         sleep_ms(2000);
@@ -880,54 +898,9 @@ void CatchBall(bool isSuction){
             //タイムアウト
             SetSuctionMotorSpeedFromMain(0);
             sleep_ms(500);
-            if(angleX > 190 || angleX < 170){
-                SetServoAngleFromMain(servo_arm_left_and_right_pin,90);
-                SetServoAngleFromMain(servo_arm_up_and_down_pin,120);
-                sleep_ms(500);
-                GetGyroAngleFromSub();
-                if(angleX > 180){
-                    RotationToAngle(angleX - 10);
-                    SetServoAngleFromMain(servo_arm_left_and_right_pin,80);
-                }else{
-                    RotationToAngle(angleX + 10);
-                    SetServoAngleFromMain(servo_arm_left_and_right_pin,100);
-                }
-                sleep_ms(100);
-                SetSuctionMotorSpeedFromMain(150);
-                MainMotorState(50,50);
-                sleep_ms(500);
-                MainMotorState(0,0);
-                sleep_ms(500);
-                SetServoAngleFromMain(servo_arm_up_and_down_pin,50);
-                colorTime = time_us_32();
-                color = 0;
-                while(true){
-                    GetColorFromSub();
-                    if(color == 1 || color == 3){
-                        SetServoAngleFromMain(servo_arm_left_and_right_pin,120);
-                        redBallNumber++;
-                        break;
-                    }else if(color == 2){
-                        SetServoAngleFromMain(servo_arm_left_and_right_pin,60);
-                        blueBallNumber++;
-                        break;
-                    }
-                    if(colorTime + 1000000 < time_us_32()){
-                        //タイムアウト
-                        SetSuctionMotorSpeedFromMain(0);
-                        sleep_ms(500);
-                        SetServoAngleFromMain(servo_arm_up_and_down_pin,50);
-                        sleep_ms(1000);
-                        return;
-                    }
-                    sleep_ms(10);
-                }
-                break;
-            }else{
-                SetServoAngleFromMain(servo_arm_up_and_down_pin,50);
-                sleep_ms(1000);
-                return;
-            }
+            SetServoAngleFromMain(servo_arm_up_and_down_pin,50);
+            sleep_ms(1000);
+            return;
         }
         sleep_ms(10);
     }
