@@ -37,7 +37,7 @@ int main(){
     UseColorLED(0,255,0);
     while(true){
         if(gpio_get(tactile_switch_pin1) == true){
-            CatchBall();
+            CatchBall(true);
             sleep_ms(3000);
             CatchVerticalCan();
         }else if(gpio_get(tactile_switch_pin2) == true){

@@ -38,4 +38,34 @@
     "raspberry-pi-pico.cmakePath": "${HOME}/.pico-sdk/cmake/v3.31.5/bin/cmake",
     "raspberry-pi-pico.ninjaPath": "${HOME}/.pico-sdk/ninja/v1.12.1/ninja",
     "C_Cpp.errorSquiggles": "disabled"
+
+    "highlight.regexes": {
+        "DaikeiKasokuLoop": {
+            "filterLanguageRegex": "cpp|c",
+            "decorations": [
+                {
+                    "color": "#ffce7b",
+                "   fontWeight": "bold"
+                }
+            ]
+        }
+        "DaikeiKasoku": {
+            "filterLanguageRegex": "cpp|c",
+            "decorations": [
+                {
+                    "color": "#ffce7b",
+                "   fontWeight": "bold"
+                }
+            ]
+        }
+        "MainMotorState": {
+            "filterLanguageRegex": "cpp|c",
+            "decorations": [
+                {
+                    "color": "#ffce7b",
+                "   fontWeight": "bold"
+                }
+            ]
+        }
+    }
 }
