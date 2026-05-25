@@ -147,7 +147,7 @@ void MainMove(){
         //ボールと缶を合わせて4つとって線上に復帰する
         int objID;
         bool isStraight = false;
-        while(objectNumber < 5){
+        while(objectNumber < 5 && ((time_us_32() - allFirstTime) / 1000000 < 240 || !isYosen)){
             // uint8_t cmd = 0x23;
             // uart_write_blocking(camera_uart,&cmd,1);
             sleep_ms(1);
