@@ -37,13 +37,9 @@ int main(){
     UseColorLED(0,255,0);
     while(true){
         if(gpio_get(tactile_switch_pin1) == true){
-            CatchBall(true);
-            sleep_ms(3000);
             CatchVerticalCan();
         }else if(gpio_get(tactile_switch_pin2) == true){
-            ResetGyro(180);
-            SetStepperON();
-            CatchPetBottle();
+            CatchHorizonCan();
             // TrashHorizonCan();
         }else if(gpio_get(tactile_switch_pin3) == true){
             allFirstTime = time_us_32();
