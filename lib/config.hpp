@@ -159,3 +159,6 @@ extern uint8_t currentBuffer[6];
 #define color_LED_pin 28 //メインマイコン
 extern int canNumber;
 extern bool isGyroReset;
+extern int allRedBallNumber;//6個
+extern int allBlueBallNumber;//2個
+extern int allCanNumber;//縦缶3個,横缶1個

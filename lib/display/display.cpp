@@ -67,8 +67,12 @@ void PrintDisplayMode(){
     if(displayMode == 1){
         serialWatch = "hom";
         WriteTextOnDisplay(5,15,"<Home>",12,true,false);
-        snprintf(displayBuffer,displayBufferSize,"%d",task);
-        WriteTextOnDisplay(5,30,displayBuffer,12,false,false);
+        snprintf(displayBuffer,displayBufferSize,"Red : %d",allRedBallNumber);
+        WriteTextOnDisplay(5,25,displayBuffer,8,false,false);
+        snprintf(displayBuffer,displayBufferSize,"Blue : %d",allBlueBallNumber);
+        WriteTextOnDisplay(5,35,displayBuffer,8,false,false);
+        snprintf(displayBuffer,displayBufferSize,"Can : %d",allCanNumber);
+        WriteTextOnDisplay(5,45,displayBuffer,8,false,false);
     }else if(displayMode == 2){
         serialWatch = "cam1";
         WriteTextOnDisplay(5,15,"<Camera1>",12,true,false);
