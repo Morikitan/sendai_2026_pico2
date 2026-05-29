@@ -27,7 +27,7 @@ int lineAngle;//0,90,180,270が入る本来、車体が直線上であるべき�
 int lastLineTime; //ミリ秒、最後に横線を読んだ時刻
 bool isLineBuzzerOn;
 float circleLineAngle;//実際の線の角度1 -999でlineがない
-float catchObjectDistance;//進んだ距離,350000以下で進まな過ぎた時の処理、450000以上で進みすぎた時の処理がある
+float catchObjectDistance;//進んだ距離,325000以下で進まな過ぎた時の処理、450000以上で進みすぎた時の処理がある
 bool isCatchHorizonCan;//横缶を取ったか
 int speed;//*10される。20～40程度
 uint32_t firstTime;
@@ -168,7 +168,7 @@ void MainMove(){
                 if(isStraight){
                     break;
                 }else{
-                    DaikeiKasokuLoop(1100,200,180);
+                    DaikeiKasokuLoop(1400,200,180);
                     isStraight = true;
                 }
             }
@@ -417,7 +417,8 @@ void MainMove(){
         blueBallNumber = 0;
         canNumber = 0;
         int preObjectNumber = objectNumber;
-        int objID;
+        int objID = 555;
+        isCatchHorizonCan = false;
         while((objectTask == 1 || objectTask == 2 || (objectTask == 3 && (redBallNumber < 3 || allRedBallNumber == 6) && (canNumber < 2 || allCanNumber == 4))) && objectNumber < 12 && (time_us_32() - allFirstTime) / 1000000 < 510 && !isCatchHorizonCan){
             // uint8_t cmd = 0x11;
             // uart_write_blocking(camera_uart,&cmd,1);
@@ -459,6 +460,9 @@ void MainMove(){
         }
         lineAngle = 180;
         preLineAngle = 180;
+        if(redBallNumber == 0 && blueBallNumber == 0 && canNumber == 0 && !isCatchHorizonCan){
+            DaikeiKasokuLoop(1000,200,180);
+        }
         }  
         //壁あてしてジャイロのリセット
         {
@@ -466,6 +470,12 @@ void MainMove(){
         preTask = task;
         while(task == preTask){
             BackLineTrace();
+            if(angleX < 120){
+                //1個読み違えてる
+                while(task == preTask){
+                    NewLineTrace();
+                }
+            }
         }
         gpio_put(buzzer_pin,0);
         MainMotorState(0,0);
@@ -577,7 +587,6 @@ void MainMove(){
             TrashfromBasket(1);
         }
         OnWall(0);
-        firstTime = time_us_32();
         MainMotorState(0,0);
         ResetGyro(0);
         gpio_put(buzzer_pin,1);
@@ -585,13 +594,13 @@ void MainMove(){
         gpio_put(buzzer_pin,0);
         preLineAngle = 0;
         lineAngle = 0;
+        firstTime = time_us_32();
         }
         //初期位置からボールをとるところまでライントレース
         if(objectNumber < 12 && (time_us_32() - allFirstTime) / 1000000 < 465){
             lastLineTime = time_us_32() / 1000;
             preTask = task;
             while(task < preTask + 2){
-                if(task == preTask) firstTime = time_us_32();
                 do{
                     PrintDisplayMode();
                     GetDataFromLineToMain();
@@ -624,7 +633,7 @@ void MainMove(){
                         PrintDisplayMode();
                         StraightLineTrace(0,speed);
                         SendBufferToDisplay();
-                        if((time_us_32() - firstTime) / 1000 > 5000){
+                        if((time_us_32() - firstTime) / 1000 > 5250){
                             break;
                         }
                     }
@@ -754,7 +763,7 @@ void BackToLine(){
     if(catchObjectDistance > 450000){
         DaikeiKasokuLoop(500,-100,180);
     }
-    if(catchObjectDistance < 350000){
+    if(catchObjectDistance < 325000){
         //進まな過ぎて線を検知できないとき
         if(0 <= angleX && angleX < 180){
             //左側にいる
@@ -791,11 +800,11 @@ void BackToLine(){
     circleLineAngle = GetCircleLineVector(20,true,true);
     firstTime = time_us_32();
     uint32_t nowTime = time_us_32() / 1000;
-    while(nowTime + 100 > time_us_32() / 1000){
+    while(nowTime + 60 > time_us_32() / 1000){
         PrintDisplayMode();
         GetDataFromLineToMain();
         circleLineAngle = GetCircleLineVector(20,true,true);
-        DaikeiKasoku(-150,backAngle);
+        DaikeiKasoku(-300,backAngle);
         if(circleLineAngle < -999 || VectorAbsoluteValue > 0.4 || (30 < ((int)circleLineAngle % 180) && ((int)circleLineAngle % 180) < 150 && VectorNumber < 3) || (circleLineSensor[4] == 0 && circleLineSensor[16] == 0 && circleLineSensor[5] == 0 && circleLineSensor[15] == 0 && VectorNumber > 2)){
             nowTime = time_us_32() / 1000;
         }
@@ -805,7 +814,7 @@ void BackToLine(){
                 PrintDisplayMode();
                 GetDataFromLineToMain();
                 circleLineAngle = GetCircleLineVector(20,true,true);
-                DaikeiKasoku(150,backAngle);
+                DaikeiKasoku(300,backAngle);
                 if(circleLineAngle < -999 || VectorAbsoluteValue > 0.4 || (30 < ((int)circleLineAngle % 180) && ((int)circleLineAngle % 180) < 150 && task < 3) || (circleLineSensor[4] == 0 && circleLineSensor[16] == 0 && circleLineSensor[5] == 0 && circleLineSensor[15] == 0 && task > 2)){
                     nowTime = time_us_32() / 1000;
                 }
@@ -1095,6 +1104,13 @@ void CatchCan(){
         }
     }while(tofTime + 100000 > time_us_32() || cameraInformation[number].y > canDistance);
     if(isBreak) return;
+    if(cameraInformation[number].obj_id == 5){
+        SetServoAngleFromMain(servo_left_claw_pin,110);
+        SetServoAngleFromMain(servo_right_claw_pin,70);
+    }else{
+        SetServoAngleFromMain(servo_left_claw_pin,140);
+        SetServoAngleFromMain(servo_right_claw_pin,40);
+    }
     MainMotorState(0,0);
     SetServoAngleFromMain(servo_arm_up_and_down_pin,155);
     sleep_ms(1000);
@@ -1102,6 +1118,8 @@ void CatchCan(){
     sleep_ms(250);
     //少し前進する
     DaikeiKasokuLoop(1750,100,999);
+    bool isGoto = false;
+    CanCatch:
     SetServoAngleFromMain(servo_left_claw_pin,30);
     SetServoAngleFromMain(servo_right_claw_pin,150);
     sleep_ms(750);
@@ -1112,7 +1130,7 @@ void CatchCan(){
     }
     GetCurrentFromSub();
     int standardCurrent[2] = {current[0],current[1]};
-    while(servoAngle <= 160 && (current[0] > standardCurrent[0] * 0.8 || current[1] > standardCurrent[1] * 0.8)){
+    while(servoAngle <= 160 && (current[0] > standardCurrent[0] * 0.8 && current[1] > standardCurrent[1] * 0.8)){
         PrintDisplayMode();
         servoAngle += 10;
         SetServoAngleFromMain(servo_left_claw_pin,servoAngle);
@@ -1135,6 +1153,11 @@ void CatchCan(){
     MainMotorState(0,0);
     if(60 < servoAngle && servoAngle < 140 && task > 7){
         //缶(横缶)を拾えた
+        if(!isGoto){
+            DaikeiKasokuLoop(500,-200,999);
+            isGoto = true;
+            goto CanCatch;
+        }
         isCatchHorizonCan = true;
         allCanNumber++;
         objectNumber++;
@@ -1169,8 +1192,16 @@ void CatchCan(){
             SetServoOffFromMain(servo_center_basket_pin);
         }
     }else{
+        if(!isGoto && task > 7){
+            DaikeiKasokuLoop(500,-200,999);
+            isGoto = true;
+            goto CanCatch;
+        }
         SetServoAngleFromMain(servo_left_claw_pin,160);
         SetServoAngleFromMain(servo_right_claw_pin,20);
+        sleep_ms(200);
+        DaikeiKasokuLoop(750,-200,999);
+        catchObjectDistance -= 50000;
         sleep_ms(500);
         SetServoAngleFromMain(servo_arm_up_and_down_pin,50);
         SetServoAngleFromMain(servo_arm_left_and_right_pin,90);
@@ -1814,7 +1845,7 @@ void TrashfromBasket(int object){
         PrintDisplayMode();
         GetDataFromLineToMain();
         circleLineAngle = GetCircleLineVector(20,true,true);
-        DaikeiKasoku(-200,90);
+        DaikeiKasoku(-300,90);
         SendBufferToDisplay();
     }
     MainMotorState(0,0);
@@ -1866,7 +1897,7 @@ void TrashfromBasket(int object){
             PrintDisplayMode();
             GetDataFromLineToMain();
             circleLineAngle = GetCircleLineVector(20,true,true);
-            DaikeiKasoku(200,90);
+            DaikeiKasoku(300,90);
             SendBufferToDisplay();
         }
         MainMotorState(0,0);
@@ -1877,7 +1908,7 @@ void TrashfromBasket(int object){
             PrintDisplayMode();
             GetDataFromLineToMain();
             circleLineAngle = GetCircleLineVector(20,true,true);
-            DaikeiKasoku(200,90);
+            DaikeiKasoku(300,90);
             SendBufferToDisplay();
         }
         MainMotorState(0,0);

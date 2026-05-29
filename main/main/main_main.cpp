@@ -37,6 +37,7 @@ int main(){
     UseColorLED(0,255,0);
     while(true){
         if(gpio_get(tactile_switch_pin1) == true){
+            task = 8;
             CatchCan();
         }else if(gpio_get(tactile_switch_pin2) == true){
             //最初に自由ボールを入れる場合の処理

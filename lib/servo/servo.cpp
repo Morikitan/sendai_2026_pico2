@@ -59,6 +59,8 @@ void SetServoAngle(unsigned int gpio,int angle){
 
 void SetServoOff(unsigned int gpio){
     uint slice_num = pwm_gpio_to_slice_num(gpio);
+    SetServoAngle(gpio,160);
+    sleep_ms(1000);
     pwm_set_enabled(slice_num,false);
 }
 
