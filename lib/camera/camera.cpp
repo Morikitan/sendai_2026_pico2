@@ -90,6 +90,7 @@ int UseCamera() {
             }
             return 999;
         }
+        int realI = 0;
         for (int i = 0; i < num_objects; i++) {
             cameraInformation[i].obj_id = buffer[i * 3];
             uint8_t x_half = buffer[i * 3 + 1];   // 2で割られたX座標
@@ -98,7 +99,7 @@ int UseCamera() {
             cameraInformation[i].y = y_half * 2;
             if(serialWatch == "cam1"){
                 if(isUseDisplay){
-                    if(i < 4){
+                    if(realI < 4){
                         if (cameraInformation[i].obj_id == 3) {
                             snprintf(displayBuffer,displayBufferSize,"Red X%d Y%d",cameraInformation[i].x,cameraInformation[i].y);
                         } else if (cameraInformation[i].obj_id == 4) {
@@ -110,8 +111,8 @@ int UseCamera() {
                         } else {
                             snprintf(displayBuffer,displayBufferSize,"??? X%d Y%d",cameraInformation[i].x,cameraInformation[i].y);
                         }
-                        WriteTextOnDisplay(5,30+i*10,displayBuffer,8,false,false);  
-                    }else if(i < 8){
+                        WriteTextOnDisplay(5,30+realI*10,displayBuffer,8,false,false);  
+                    }else if(realI < 8){
                         if (cameraInformation[i].obj_id == 3) {
                             snprintf(displayBuffer,displayBufferSize,"Red");
                         } else if (cameraInformation[i].obj_id == 4) {
@@ -123,7 +124,7 @@ int UseCamera() {
                         } else {
                             snprintf(displayBuffer,displayBufferSize,"???");
                         }
-                        WriteTextOnDisplay(100,-10+i*10,displayBuffer,8,false,false);
+                        WriteTextOnDisplay(100,-10+realI*10,displayBuffer,8,false,false);
                     }
                 }else{
                     if (cameraInformation[i].obj_id == 3) {
@@ -140,7 +141,7 @@ int UseCamera() {
                 }
             }else if(serialWatch == "cam2"){
                 if(isUseDisplay){
-                    if(i < 4){
+                    if(realI < 4){
                         if (cameraInformation[i].obj_id == 3) {
                             snprintf(displayBuffer,displayBufferSize,"Red");
                         } else if (cameraInformation[i].obj_id == 4) {
@@ -152,8 +153,8 @@ int UseCamera() {
                         } else {
                             snprintf(displayBuffer,displayBufferSize,"???");
                         }
-                        WriteTextOnDisplay(5,30+i*10,displayBuffer,8,false,false);
-                    }else if(i < 8){
+                        WriteTextOnDisplay(5,30+realI*10,displayBuffer,8,false,false);
+                    }else if(realI < 8){
                         if (cameraInformation[i].obj_id == 3) {
                             snprintf(displayBuffer,displayBufferSize,"Red X%d Y%d",cameraInformation[i].x,cameraInformation[i].y);
                         } else if (cameraInformation[i].obj_id == 4) {
@@ -165,7 +166,7 @@ int UseCamera() {
                         } else {
                             snprintf(displayBuffer,displayBufferSize,"??? X%d Y%d",cameraInformation[i].x,cameraInformation[i].y);
                         }
-                        WriteTextOnDisplay(35,-10+i*10,displayBuffer,8,false,false);  
+                        WriteTextOnDisplay(35,-10+realI*10,displayBuffer,8,false,false);  
                     }
                 }else{
                     if (cameraInformation[i].obj_id == 3) {
@@ -181,6 +182,7 @@ int UseCamera() {
                     }
                 }
             }
+            if(3 <= cameraInformation[i].obj_id && cameraInformation[i].obj_id <= 6)realI++;
         }
         return num_objects;
     } else {
