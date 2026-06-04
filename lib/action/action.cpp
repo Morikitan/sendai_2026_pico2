@@ -510,7 +510,7 @@ void MainMove(){
         firstTime = time_us_32();
         while(!gpio_get(touch_sensor_back_left_pin) || !gpio_get(touch_sensor_back_right_pin)){
             PrintDisplayMode();
-            DaikeiKasoku(-200,999);
+            DaikeiKasoku(-400,999);
             SendBufferToDisplay();
         }
         MainMotorState(0,0);
@@ -572,6 +572,17 @@ void MainMove(){
             BackLineTrace();
         }
         gpio_put(buzzer_pin,0);
+        if(isCatchHorizonCan){
+            MainMotorState(0,0);
+            gpio_put(buzzer_pin,1);
+            sleep_ms(500);
+            gpio_put(buzzer_pin,0);
+            TrashHorizonCan();
+            preLineAngle = 180;
+            lineAngle = 180;
+            sleep_ms(500);
+            pLeft = 0;pRight = 0;
+        }
         if(canNumber > 0){
             MainMotorState(0,0);
             gpio_put(buzzer_pin,1);
@@ -582,17 +593,6 @@ void MainMove(){
             lineAngle = 180;
             sleep_ms(500);
             lastLineTime = time_us_32() / 1000;
-            pLeft = 0;pRight = 0;
-        }
-        if(isCatchHorizonCan){
-            MainMotorState(0,0);
-            gpio_put(buzzer_pin,1);
-            sleep_ms(500);
-            gpio_put(buzzer_pin,0);
-            TrashHorizonCan();
-            preLineAngle = 180;
-            lineAngle = 180;
-            sleep_ms(500);
             pLeft = 0;pRight = 0;
         }
         if(redBallNumber == 0 && (time_us_32() - allFirstTime) / 1000000 < 480){
@@ -990,12 +990,12 @@ void CatchBall(bool isSuction){
     SetServoAngleFromMain(servo_left_claw_pin,160);
     SetServoAngleFromMain(servo_right_claw_pin,20);
     sleep_ms(1000);
-    SetServoAngleFromMain(servo_arm_up_and_down_pin,166);
+    SetServoAngleFromMain(servo_arm_up_and_down_pin,168);
     sleep_ms(500);
     PrintDisplayMode();
     GetCurrentFromSub();
     SendBufferToDisplay();
-    if(current[2] > upDownArmStandardCurrent * 4){
+    if(current[2] < upDownArmStandardCurrent * 2){
         //アームが引っ掛かってる
         SetServoAngleFromMain(servo_arm_left_and_right_pin,90);
         SetServoAngleFromMain(servo_arm_up_and_down_pin,120);
@@ -1017,8 +1017,8 @@ void CatchBall(bool isSuction){
         catchObjectDistance += 500 * 100 * sin((angleX - 90) / 180.0 * 3.1416);
         DaikeiKasokuLoop(600,100,999);
     }else{
-        catchObjectDistance += 400 * 100 * sin((angleX - 90) / 180.0 * 3.1416);
-        DaikeiKasokuLoop(500,100,999);
+        catchObjectDistance += 150 * 100 * sin((angleX - 90) / 180.0 * 3.1416);
+        DaikeiKasokuLoop(250,100,999);
         GetCurrentFromSub();
         int standardCurrent[2] = {current[0],current[1]};
         SetServoAngleFromMain(servo_left_claw_pin,50);
@@ -1117,7 +1117,7 @@ void CatchCan(){
     prenow = time_us_32();
     int preX = 0;
     bool isBreak = false;
-    int canDistance = 135;//135
+    int canDistance = 115;//135
     unWatchTime = prenow;
     do{
         PrintDisplayMode();
@@ -1779,6 +1779,7 @@ int RotationToObject(){
         isGreaterThancenterX = 2;
     }
     int gotoNumber = 0;
+    float targetAngle = angleX - atan((float)(cameraInformation[number].x - centerX) / (cameraInformation[number].y + 30.0)) / 3.142 * 180;
     firstTime = time_us_32();
 
     while(true){
@@ -1795,8 +1796,10 @@ int RotationToObject(){
         for(int i = 0;i < num_objects;i++){
             if(Y > cameraInformation[i].y && 3 <= cameraInformation[i].obj_id && cameraInformation[i].obj_id <= 6){
                 if(((isGreaterThancenterX == 1 && centerX - 5 < cameraInformation[i].x  && (cameraInformation[i].x < 320.0 - (180 - angleX) * 2.0 || decidedObj_id == 3 || decidedObj_id == 4)) || (isGreaterThancenterX == 2 && ( (angleX - 180.0) * 2 < cameraInformation[i].x || decidedObj_id == 3 || decidedObj_id == 4) && cameraInformation[i].x < centerX + 5)) && (cameraInformation[i].obj_id == decidedObj_id || (cameraInformation[i].obj_id == 5 && decidedObj_id == 6) || (cameraInformation[i].obj_id == 6 && decidedObj_id == 5))){
-                    number = i;
-                    Y = cameraInformation[i].y;
+                    if(fabs(targetAngle - (angleX - atan((float)(cameraInformation[i].x - centerX) / (cameraInformation[i].y + 30.0)) / 3.142 * 180)) < 5.0){
+                        number = i;
+                        Y = cameraInformation[i].y;
+                    }
                 }
             }
         }
@@ -1939,54 +1942,16 @@ void TrashfromBasket(int object){
         SendBufferToDisplay();
     }
     MainMotorState(0,0);
-    // SetStepperSleep();
-    int basket;
     if(object == 1){
-        basket = servo_left_basket_pin;
-    }else if(object == 2){
-        basket = servo_right_basket_pin;
-    }else if(object == 3){
-        basket = servo_center_basket_pin;
-        SetServoAngleFromMain(servo_arm_up_and_down_pin,90);
-    }
-    if(object == 1 || object == 2){
-        //丁寧に排出する
-        if(object == 1 && objectTask == 1 && allRedBallNumber > 3){
-            //objectTask == 1のときは青ボールのかごにも赤ボールが入っている
-            for(int i = 0;i < 10;i++)SetServoAngleFromMain(basket,100);
-            for(int i = 0;i < 10;i++)SetServoAngleFromMain(servo_right_basket_pin,100);
-            sleep_ms(730);
-            for(int i = 0;i < 10;i++)SetServoAngleFromMain(basket,80);
-            for(int i = 0;i < 10;i++)SetServoAngleFromMain(servo_right_basket_pin,100);
-            sleep_ms(480);
-            for(int i = 0;i < 10;i++)SetServoAngleFromMain(basket,60);
-            for(int i = 0;i < 10;i++)SetServoAngleFromMain(servo_right_basket_pin,100);
-            sleep_ms(1980);
+        if(objectTask == 1 && allRedBallNumber >= 3){
+            TrashfromBasketFromMain(11);
         }else{
-            for(int i = 0;i < 10;i++)SetServoAngleFromMain(basket,100);
-            sleep_ms(740);
-            for(int i = 0;i < 10;i++)SetServoAngleFromMain(basket,80);
-            sleep_ms(490);
-            for(int i = 0;i < 10;i++)SetServoAngleFromMain(basket,60);
-            sleep_ms(1990);
+            TrashfromBasketFromMain(10);
         }
     }else{
-        for(int i = 0;i < 10;i++)SetServoAngleFromMain(basket,60);
-        sleep_ms(1990);
+        TrashfromBasketFromMain(object);
     }
-    for(int i = 0;i < 10;i++)SetServoAngleFromMain(basket,160);
-    if(objectTask == 1 && object == 1){
-        for(int i = 0;i < 10;i++)SetServoAngleFromMain(servo_right_basket_pin,160);
-        sleep_ms(230);
-    }else{
-        sleep_ms(240);
-    }
-    for(int i = 0;i < 10;i++)SetServoOffFromMain(basket);
-    if(objectTask == 1 && object == 1){
-        for(int i = 0;i < 10;i++)SetServoOffFromMain(servo_right_basket_pin);
-    }
-    // SetStepperON();
-    if(object == 3)SetServoAngleFromMain(servo_arm_up_and_down_pin,50);
+    
     GetDataFromLineToMain();
     circleLineAngle = GetCircleLineVector(20,true,true);
     firstTime = time_us_32();

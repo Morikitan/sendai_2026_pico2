@@ -11,7 +11,7 @@
 #include "pico/stdlib.h"
 #include <stdio.h>
 
-#define BAUDRATE 115200
+#define BAUDRATE 19200
 
 bool isGyroReset;
 
@@ -87,11 +87,64 @@ void SubCallBack(){
             break;
         }
         case 0x14:{
-            //サーボをオフにする
+            //ジャイロをリセットする
             uint8_t halfAngle;
             uart_read_blocking(sub_to_main_uart,&halfAngle,1);
             correctionAngle = (int)(halfAngle) * 2;
             isGyroReset = true;
+            break;
+        }
+        case 0x21:{
+            //赤玉の排出(通常)
+            SetServoAngle(servo_left_basket_pin,100);
+            sleep_ms(750);
+            SetServoAngle(servo_left_basket_pin,80);
+            sleep_ms(500);
+            SetServoAngle(servo_left_basket_pin,60);
+            sleep_ms(2000);
+            SetServoAngle(servo_left_basket_pin,160);
+            sleep_ms(1000);
+            SetServoOff(servo_left_basket_pin);
+            break;
+        }
+        case 0x22:{
+            //赤玉の排出(同時に２つ)
+            SetServoAngle(servo_left_basket_pin,100);
+            SetServoAngle(servo_right_basket_pin,100);
+            sleep_ms(750);
+            SetServoAngle(servo_left_basket_pin,80);
+            SetServoAngle(servo_right_basket_pin,80);
+            sleep_ms(500);
+            SetServoAngle(servo_left_basket_pin,60);
+            SetServoAngle(servo_right_basket_pin,60);
+            sleep_ms(2000);
+            SetServoAngle(servo_left_basket_pin,160);
+            SetServoAngle(servo_right_basket_pin,160);
+            sleep_ms(1000);
+            SetServoOff(servo_left_basket_pin);
+            SetServoOff(servo_right_basket_pin);
+            break;
+        }
+        case 0x23:{
+            //青玉の排出(通常)
+            SetServoAngle(servo_right_basket_pin,100);
+            sleep_ms(750);
+            SetServoAngle(servo_right_basket_pin,80);
+            sleep_ms(500);
+            SetServoAngle(servo_right_basket_pin,60);
+            sleep_ms(2000);
+            SetServoAngle(servo_right_basket_pin,160);
+            sleep_ms(1000);
+            SetServoOff(servo_right_basket_pin);
+            break;
+        }
+        case 0x24:{
+            //黄缶の排出(通常)
+            SetServoAngle(servo_center_basket_pin,60);
+            sleep_ms(2000);
+            SetServoAngle(servo_center_basket_pin,160);
+            sleep_ms(1000);
+            SetServoOff(servo_center_basket_pin);
             break;
         }
         default:
@@ -111,6 +164,29 @@ void SetServoAngleFromMain(unsigned int gpio,int angle){
 void SetServoOffFromMain(unsigned int gpio){
     uart_write_blocking(main_to_sub_uart,(uint8_t[]){0x13,(uint8_t)gpio},2);
     sleep_ms(1);
+}
+
+// 対象を捨てるプログラム
+//object = 10 : 赤玉
+//object = 11 : 赤玉(青玉のほうにもためてる)
+//object = 2  : 青玉
+//object = 3  : 黄缶
+void TrashfromBasketFromMain(int object){
+    if(object == 10){
+        uart_write_blocking(main_to_sub_uart,(uint8_t[]){0x21},1);
+        sleep_ms(3150);
+    }else if(object == 11){
+        uart_write_blocking(main_to_sub_uart,(uint8_t[]){0x22},1);
+        sleep_ms(3150);
+    }else if(object == 2){
+        uart_write_blocking(main_to_sub_uart,(uint8_t[]){0x23},1);
+        sleep_ms(3150);
+    }else if(object == 3){
+        SetServoAngleFromMain(servo_arm_up_and_down_pin,90);
+        uart_write_blocking(main_to_sub_uart,(uint8_t[]){0x24},1);
+        sleep_ms(1900);
+        SetServoAngleFromMain(servo_arm_up_and_down_pin,50);
+    }
 }
 
 //吸引のモーターのスピードを制御する関数
