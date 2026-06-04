@@ -29,7 +29,7 @@ int main(){
     LineTraceSetup();
     ColorLEDSetup();
     sleep_ms(2000);
-    SetServoAngleFromMain(servo_arm_up_and_down_pin,50);
+    SetServoAngleFromMain(servo_arm_up_and_down_pin,166);
     SetServoAngleFromMain(servo_arm_left_and_right_pin,90);
     SetServoAngleFromMain(servo_left_claw_pin,90);
     SetServoAngleFromMain(servo_right_claw_pin,90);
@@ -38,7 +38,7 @@ int main(){
     while(true){
         if(gpio_get(tactile_switch_pin1) == true){
             task = 8;
-            CatchCan();
+            CatchBall(true);
         }else if(gpio_get(tactile_switch_pin2) == true){
             //最初に自由ボールを入れる場合の処理
         }else if(gpio_get(tactile_switch_pin3) == true){

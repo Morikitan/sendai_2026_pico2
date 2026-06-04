@@ -121,8 +121,8 @@ void SuctionSetup(){
 //吸引用モーター
 void SetSuctionMotorSpeed(uint duty){
     //周波数をf[Hz]とすると
-    //(pico2)150×1000×1000 = f × clkdiv × (warp + 1) clkdiv = 588.235
-    //(pico) 125×1000×1000 = f × clkdiv × (warp + 1) clkdiv = 488.281
+    //(pico2)150×1000×1000 = f × clkdiv × (warp + 1) clkdiv = 150.0
+    //(pico) 125×1000×1000 = f × clkdiv × (warp + 1) clkdiv = 125.0
     //よって今は f = 1.0[kHz]
     uint slice_num = pwm_gpio_to_slice_num(motor_suction_pin);
     uint channel = pwm_gpio_to_channel(motor_suction_pin);

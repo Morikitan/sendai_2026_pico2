@@ -225,10 +225,10 @@ void GetCurrentFromSub(){
             WriteTextOnDisplay(5,30,displayBuffer,8,false,false);
             snprintf(displayBuffer,displayBufferSize,"right hand : %u",current[1]);
             WriteTextOnDisplay(5,40,displayBuffer,8,false,false);
-            snprintf(displayBuffer,displayBufferSize,"DC : %u",current[2]);
+            snprintf(displayBuffer,displayBufferSize,"Arm : %u",current[2]);
             WriteTextOnDisplay(5,50,displayBuffer,8,false,false);
         }else{
-            printf("left hand : %u right hand : %u DC : %u\n",current[0],current[1],current[2]);
+            printf("left hand : %u right hand : %u Arm : %u\n",current[0],current[1],current[2]);
         }
     }
 }
