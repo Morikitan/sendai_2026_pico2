@@ -35,10 +35,13 @@ int main(){
     SetServoAngleFromMain(servo_right_claw_pin,90);
     // SetSuctionMotorSpeedFromMain(75);//30%
     UseColorLED(0,255,0);
+    gpio_put(buzzer_pin,true);
+    sleep_ms(500);
+    gpio_put(buzzer_pin,false);
     while(true){
         if(gpio_get(tactile_switch_pin1) == true){
             task = 8;
-            CatchCan();
+            CatchBall(true);
         }else if(gpio_get(tactile_switch_pin2) == true){
             //最初に自由ボールを入れる場合の処理
         }else if(gpio_get(tactile_switch_pin3) == true){

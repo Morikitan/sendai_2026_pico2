@@ -17,7 +17,6 @@ void ColorSensorSetup(){
     gpio_set_function(color_sensor_SDA_pin, GPIO_FUNC_I2C);
     gpio_init(color_sensor_LED_pin);
     gpio_set_dir(color_sensor_LED_pin, GPIO_OUT);
-    gpio_put(color_sensor_LED_pin,1);
     // 固定時間モード / Lowゲイン / 22.4ms
     // bit7=0 bit6=0 bit3=0 bit2=0 bit1,0=10
     write_register(REG_CONTROL, 0x02);
@@ -101,7 +100,7 @@ int UseColorSensor(){
     }
     printf("Object:%d\n",object);
     //LEDの消灯
-    // gpio_put(color_sensor_LED_pin,0);
+    gpio_put(color_sensor_LED_pin,0);
     return object;
 }
 

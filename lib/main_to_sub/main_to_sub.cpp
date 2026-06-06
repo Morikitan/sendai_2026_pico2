@@ -147,6 +147,11 @@ void SubCallBack(){
             SetServoOff(servo_center_basket_pin);
             break;
         }
+        case 0x31:{
+            //から線のLEDつける
+            gpio_put(color_sensor_LED_pin,1);
+            break;
+        }
         default:
             break;
         }
@@ -251,6 +256,10 @@ void GetDistanceFromSub(){
             }
         }
     }
+}
+
+void TurnOnColorLEDFromMain(){
+    uart_write_blocking(main_to_sub_uart,(uint8_t[]){0x31},1);
 }
 
 //メインマイコンがサブマイコンからcolorを取得する関数

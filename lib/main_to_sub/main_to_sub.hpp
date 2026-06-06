@@ -18,6 +18,7 @@ void GetGyroAngleFromSub();
 void GetDistanceFromSub();
 void GetColorFromSub();
 void GetCurrentFromSub();
+void TurnOnColorLEDFromMain();
 
 #ifdef __cplusplus
 }
