@@ -863,6 +863,7 @@ void CatchBall(bool isSuction){
     int num_objects,d,number = 0;
     int preX = 0;
     unWatchTime = prenow;
+    bool isBreak = false;
     do{
         PrintDisplayMode();
         num_objects = UseCamera();
@@ -918,10 +919,17 @@ void CatchBall(bool isSuction){
             tofTime = time_us_32();
         }
         SendBufferToDisplay();
-        if(gpio_get(touch_sensor_front_left_pin) || gpio_get(touch_sensor_front_right_pin)){
-            break;
+        if((now - firstTime) / 1000 > 10000 || gpio_get(touch_sensor_front_left_pin) || gpio_get(touch_sensor_front_right_pin)){
+            //タイムアウト
+            isBreak = true;
         }
+        if(isBreak) break;
     }while(tofTime + 100000 > time_us_32());
+    if(isBreak){
+        DaikeiKasokuLoop(1000,-200,999);
+        catchObjectDistance -= 180000;
+        return;
+    } 
     MainMotorState(0,0);
     PrintDisplayMode();
     GetCurrentFromSub();
@@ -1063,6 +1071,7 @@ void CatchCan(){
     bool isBreak = false;
     int canDistance = 115;//135
     unWatchTime = prenow;
+    firstTime = prenow;
     do{
         PrintDisplayMode();
         num_objects = UseCamera();
@@ -1117,12 +1126,17 @@ void CatchCan(){
             tofTime = time_us_32();
         }
         SendBufferToDisplay();
-        if(isBreak) break;
-        if(gpio_get(touch_sensor_front_left_pin) || gpio_get(touch_sensor_front_right_pin)){
-            break;
+        if((now - firstTime) / 1000 > 10000 || gpio_get(touch_sensor_front_left_pin) || gpio_get(touch_sensor_front_right_pin)){
+            //タイムアウト
+            isBreak = true;
         }
+        if(isBreak) break;
     }while(tofTime + 100000 > time_us_32() || cameraInformation[number].y > canDistance);
-    if(isBreak) return;
+    if(isBreak){
+        DaikeiKasokuLoop(1000,-200,999);
+        catchObjectDistance -= 180000;
+        return;
+    } 
     if(cameraInformation[number].obj_id == 5){
         SetServoAngleFromMain(servo_left_claw_pin,110);
         SetServoAngleFromMain(servo_right_claw_pin,70);
@@ -1245,8 +1259,8 @@ void CatchPetBottle(){
     GetDataFromLineToMain();
     circleLineAngle = GetCircleLineVector(20,true,true);
     UseColorLED(255,255,255);
+    firstTime = time_us_32();
     if(objectNumber < 5){
-        firstTime = time_us_32();
         while(VectorNumber < 4){
             PrintDisplayMode();
             GetDataFromLineToMain();
@@ -1254,9 +1268,9 @@ void CatchPetBottle(){
             DaikeiKasoku(100,180);
             SendBufferToDisplay();
         }
-        firstTime = time_us_32();
+        uint32_t firstTime2 = time_us_32();
         UseColorLED(255,0,255);
-        while((time_us_32() - firstTime) / 1000 < 1000){
+        while((time_us_32() - firstTime2) / 1000 < 1000){
             PrintDisplayMode();
             GetGyroAngleFromSub();
             GetDataFromLineToMain();
@@ -1270,8 +1284,8 @@ void CatchPetBottle(){
     GetDistanceFromSub();
     uint32_t deltaTime = 0;
     uint32_t preTime = time_us_32() / 1000;
-    firstTime = time_us_32();
     if(distance < 350){
+        firstTime = time_us_32();
         while(deltaTime < 50){
             PrintDisplayMode();
             DaikeiKasoku(-100,999);
@@ -1287,8 +1301,8 @@ void CatchPetBottle(){
     }
     deltaTime = 0;
     preTime = time_us_32() / 1000;
-    firstTime = time_us_32();
     pLeft = 100;pRight = 100;
+    firstTime = time_us_32();
     while(deltaTime < 50){
         PrintDisplayMode();
         StraightLineTrace(180,10);
@@ -1300,8 +1314,8 @@ void CatchPetBottle(){
         }
         preTime = time_us_32() / 1000;
         SendBufferToDisplay();
-        if((time_us_32() - firstTime) / 1000 > 5000){
-            DaikeiKasokuLoop(1250,-150,180);
+        if((time_us_32() - firstTime) / 1000 > 4000){
+            DaikeiKasokuLoop(400,-150,180);
             break;
         } 
     }
