@@ -73,6 +73,11 @@ void PrintDisplayMode(){
         WriteTextOnDisplay(5,35,displayBuffer,8,false,false);
         snprintf(displayBuffer,displayBufferSize,"Can : %d",allCanNumber);
         WriteTextOnDisplay(5,45,displayBuffer,8,false,false);
+        if(isYosen){
+            WriteTextOnDisplay(5,55,"yosen",8,false,false);
+        }else{
+            WriteTextOnDisplay(5,55,"honsen",8,false,false);
+        }
     }else if(displayMode == 2){
         serialWatch = "cam1";
         WriteTextOnDisplay(5,15,"<Camera1>",12,true,false);

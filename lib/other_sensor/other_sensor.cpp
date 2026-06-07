@@ -132,7 +132,7 @@ void MainInterrupt(uint gpio, uint32_t events){
             displayMode++;
         } else {
             // 反時計回り
-            displayMode--;
+            displayMode++;
         }
 
         // ループ処理（0〜MAX_displayMode）
