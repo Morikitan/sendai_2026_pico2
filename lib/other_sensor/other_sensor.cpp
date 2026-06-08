@@ -10,6 +10,7 @@
 uint8_t color;
 uint16_t current[3];
 uint8_t currentBuffer[6];
+uint32_t lastIrqTime = 0;
 
 void ColorSensorSetup(){
     i2c_init(color_sensor_i2c, 100000);
@@ -126,13 +127,13 @@ void UseCurrentSensor(unsigned int input){
 }
 
 void MainInterrupt(uint gpio, uint32_t events){
-    if(gpio == encoderA_pin){
+    if(gpio == encoderA_pin && (time_us_32() - lastIrqTime) / 1000 > 250){
         if (gpio_get(encoderB_pin) == true) {
             // 時計回り
             displayMode++;
         } else {
             // 反時計回り
-            displayMode++;
+            displayMode--;
         }
 
         // ループ処理（0〜MAX_displayMode）
@@ -141,5 +142,6 @@ void MainInterrupt(uint gpio, uint32_t events){
         } else if (displayMode <= 0) {
             displayMode = 10;
         }
+        lastIrqTime = time_us_32();
     }
 }
