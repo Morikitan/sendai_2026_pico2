@@ -19,7 +19,8 @@
 //共有変数
 int task;
 uint32_t allFirstTime;
-bool isYosen = true;
+bool isYosen = true; //予選か
+bool isFreeBall = false; //自由ボールを先に捨てるか
 
 //非共有変数
 int preLineAngle;
@@ -125,6 +126,11 @@ void MainMove(){
         gpio_put(buzzer_pin,0);
         task++;
         if(task == 2){
+            if(isFreeBall){
+                MainMotorState(0,0);
+                TrashHorizonCan();
+                pRight = 0;pLeft = 0;
+            }
             uint32_t firstTime2 = time_us_32();
             while((time_us_32() - firstTime2) / 1000 < 750){
                 PrintDisplayMode();
@@ -190,7 +196,9 @@ void MainMove(){
             }
             
             if(objID == 3 || objID == 4){
-                CatchBall(false);
+                //予選は横缶が飛んでもいいから吸引する
+                if(isYosen) CatchBall(true);
+                else CatchBall(false);
                 isStraight = false;
             }else if(objID == 5 || objID == 6){
                 CatchCan();
@@ -296,7 +304,9 @@ void MainMove(){
         gpio_put(buzzer_pin,1);
         sleep_ms(500);
         gpio_put(buzzer_pin,0);
-        TrashfromBasket(2);
+        if(!isFreeBall || allBlueBallNumber > 0){
+            TrashfromBasket(2);
+        }
         pLeft = 0;pRight = 0;
         task++;
         preLineAngle = 90;
@@ -979,6 +989,7 @@ void CatchBall(bool isSuction){
         sleep_ms(2000);
         catchObjectDistance += 500 * 100 * sin((angleX - 90) / 180.0 * 3.1416);
         DaikeiKasokuLoop(600,100,999);
+        sleep_ms(500);
     }else{
         catchObjectDistance += 250 * 100 * sin((angleX - 90) / 180.0 * 3.1416);
         DaikeiKasokuLoop(350,100,999);
@@ -1014,7 +1025,7 @@ void CatchBall(bool isSuction){
     GetGyroAngleFromSub();
     catchObjectDistance += 150 * 100 * sin((angleX - 90) / 180.0 * 3.1416);
     sleep_ms(250);
-    if(isSuction && allRedBallNumber <= 2 && redBallNumber == 0){
+    if(isSuction && allRedBallNumber <= 2 && redBallNumber == 0 && !isYosen){
         //ピラミッドを崩すとき
         DaikeiKasokuLoop(5000,-25,999);
     }
@@ -1047,12 +1058,13 @@ void CatchBall(bool isSuction){
             blueBallNumber++;
             break;
         }
-        if(colorTime + 1000000 < time_us_32()){
+        if((colorTime + 1000000 < time_us_32() && isSuction) || (colorTime + 5000000 < time_us_32() && !isSuction)){
             //タイムアウト
             SetSuctionMotorSpeedFromMain(0);
             sleep_ms(500);
-            SetServoAngleFromMain(servo_arm_up_and_down_pin,55);
-            sleep_ms(1000);
+            SetServoAngleFromMain(servo_arm_up_and_down_pin,165);
+            sleep_ms(1500);
+            SetServoAngleFromMain(servo_arm_up_and_down_pin,50);
             return;
         }
         sleep_ms(10);
@@ -1230,7 +1242,7 @@ void CatchCan(){
         SetServoAngleFromMain(servo_right_claw_pin,20);
         sleep_ms(1000);
         //初めて缶をとった時は振る
-        if(canNumber == 1){
+        if(canNumber == 1 && allCanNumber <= 3){
             SetServoAngleFromMain(servo_arm_up_and_down_pin,90);
             sleep_ms(500);
             SetServoAngleFromMain(servo_center_basket_pin,150);
@@ -1344,6 +1356,11 @@ void CatchPetBottle(){
         sleep_ms(250);
     }
     SetServoAngleFromMain(servo_arm_up_and_down_pin,163);
+    GetCurrentFromSub();
+    if(current[2] > 1000){
+        //乗り上げている
+        DaikeiKasokuLoop(2000,-100,180);
+    }
     sleep_ms(1000);
     DaikeiKasokuLoop(1300,100,180);
     SetServoAngleFromMain(servo_left_claw_pin,40);

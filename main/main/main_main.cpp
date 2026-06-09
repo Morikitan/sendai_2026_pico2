@@ -31,8 +31,8 @@ int main(){
     sleep_ms(2000);
     SetServoAngleFromMain(servo_arm_up_and_down_pin,50);
     SetServoAngleFromMain(servo_arm_left_and_right_pin,90);
-    SetServoAngleFromMain(servo_left_claw_pin,90);
-    SetServoAngleFromMain(servo_right_claw_pin,90);
+    SetServoAngleFromMain(servo_left_claw_pin,40);
+    SetServoAngleFromMain(servo_right_claw_pin,140);
     // SetSuctionMotorSpeedFromMain(75);//30%
     UseColorLED(0,255,0);
     gpio_put(buzzer_pin,true);
@@ -44,9 +44,19 @@ int main(){
             CatchBall(true);
         }else if(gpio_get(tactile_switch_pin2) == true){
             //最初に自由ボールを入れる場合の処理
+            allFirstTime = time_us_32();
+            SetStepperON();
+            isFreeBall = true;
+            sleep_ms(500);
+            while(true){
+                PrintDisplayMode();
+                MainMove();
+                SendBufferToDisplay();
+            }
         }else if(gpio_get(tactile_switch_pin3) == true){
             allFirstTime = time_us_32();
             SetStepperON();
+            isFreeBall = false;
             sleep_ms(500);
             while(true){
                 PrintDisplayMode();

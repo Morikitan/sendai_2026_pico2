@@ -96,22 +96,32 @@ void SubCallBack(){
         }
         case 0x21:{
             //赤玉の排出(通常)
+            SetServoAngle(servo_left_basket_pin,140);
+            sleep_ms(500);
+            SetServoAngle(servo_left_basket_pin,120);
+            sleep_ms(500);
             SetServoAngle(servo_left_basket_pin,100);
-            sleep_ms(750);
+            sleep_ms(500);
             SetServoAngle(servo_left_basket_pin,80);
             sleep_ms(500);
             SetServoAngle(servo_left_basket_pin,60);
             sleep_ms(2000);
             SetServoAngle(servo_left_basket_pin,160);
-            sleep_ms(1000);
+            sleep_ms(2000);
             SetServoOff(servo_left_basket_pin);
             break;
         }
         case 0x22:{
             //赤玉の排出(同時に２つ)
+            SetServoAngle(servo_left_basket_pin,140);
+            SetServoAngle(servo_right_basket_pin,140);
+            sleep_ms(500);
+            SetServoAngle(servo_left_basket_pin,120);
+            SetServoAngle(servo_right_basket_pin,120);
+            sleep_ms(500);
             SetServoAngle(servo_left_basket_pin,100);
             SetServoAngle(servo_right_basket_pin,100);
-            sleep_ms(750);
+            sleep_ms(500);
             SetServoAngle(servo_left_basket_pin,80);
             SetServoAngle(servo_right_basket_pin,80);
             sleep_ms(500);
@@ -120,30 +130,34 @@ void SubCallBack(){
             sleep_ms(2000);
             SetServoAngle(servo_left_basket_pin,160);
             SetServoAngle(servo_right_basket_pin,160);
-            sleep_ms(1000);
+            sleep_ms(2000);
             SetServoOff(servo_left_basket_pin);
             SetServoOff(servo_right_basket_pin);
             break;
         }
         case 0x23:{
             //青玉の排出(通常)
+            SetServoAngle(servo_right_basket_pin,140);
+            sleep_ms(500);
+            SetServoAngle(servo_right_basket_pin,120);
+            sleep_ms(500);
             SetServoAngle(servo_right_basket_pin,100);
-            sleep_ms(750);
+            sleep_ms(500);
             SetServoAngle(servo_right_basket_pin,80);
             sleep_ms(500);
             SetServoAngle(servo_right_basket_pin,60);
             sleep_ms(2000);
             SetServoAngle(servo_right_basket_pin,160);
-            sleep_ms(1000);
+            sleep_ms(2000);
             SetServoOff(servo_right_basket_pin);
             break;
         }
         case 0x24:{
             //黄缶の排出(通常)
             SetServoAngle(servo_center_basket_pin,60);
-            sleep_ms(2000);
+            sleep_ms(3000);
             SetServoAngle(servo_center_basket_pin,160);
-            sleep_ms(1000);
+            sleep_ms(2000);
             SetServoOff(servo_center_basket_pin);
             break;
         }
@@ -189,7 +203,7 @@ void TrashfromBasketFromMain(int object){
     }else if(object == 3){
         SetServoAngleFromMain(servo_arm_up_and_down_pin,90);
         uart_write_blocking(main_to_sub_uart,(uint8_t[]){0x24},1);
-        sleep_ms(1900);
+        sleep_ms(2900);
         SetServoAngleFromMain(servo_arm_up_and_down_pin,50);
     }
 }
