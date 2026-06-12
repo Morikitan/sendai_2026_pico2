@@ -19,6 +19,7 @@ void GetDistanceFromSub();
 void GetColorFromSub();
 void GetCurrentFromSub();
 void TurnOnColorLEDFromMain();
+bool UARTReadTimeout(uart_inst_t *uart, uint8_t *data, int length, uint32_t timeout_ms);
 
 #ifdef __cplusplus
 }

@@ -250,7 +250,7 @@ void GetDistanceFromSub(){
     // printf("tof待機");
     uart_write_blocking(main_to_sub_uart,(uint8_t[]){0x02},1);
     // printf(" tof書き込み完了\n");
-    uart_read_blocking(main_to_sub_uart,data,2);
+    UARTReadTimeout(main_to_sub_uart,data,2,10);
     // printf(" tof読み取り完了\n");
     distance = (data[0] << 8) | data[1];
     if(serialWatch == "tof"){
@@ -279,7 +279,7 @@ void TurnOnColorLEDFromMain(){
 //メインマイコンがサブマイコンからcolorを取得する関数
 void GetColorFromSub(){
     uart_write_blocking(main_to_sub_uart,(uint8_t[]){0x03},1);
-    uart_read_blocking(main_to_sub_uart,&color,1);
+    UARTReadTimeout(main_to_sub_uart,&color,1,10);
     if(serialWatch == "col"){
         if(isUseDisplay){
             if(color == 1){
@@ -314,7 +314,7 @@ void GetColorFromSub(){
 //        DC    : 2 
 void GetCurrentFromSub(){
     uart_write_blocking(main_to_sub_uart,(uint8_t[]){0x04},1);
-    uart_read_blocking(main_to_sub_uart,currentBuffer,6);
+    UARTReadTimeout(main_to_sub_uart,currentBuffer,6,10);
     for(int i = 0;i < 3;i++){
         current[i] = ((uint16_t)currentBuffer[i * 2]) << 8 | (uint16_t)currentBuffer[i * 2 + 1]; 
     }
@@ -330,4 +330,19 @@ void GetCurrentFromSub(){
             printf("left hand : %u right hand : %u Arm : %u\n",current[0],current[1],current[2]);
         }
     }
+}
+
+bool UARTReadTimeout(uart_inst_t *uart, uint8_t *data, int length, uint32_t timeout_ms){
+    uint32_t start = time_us_32();
+
+    for(int i = 0; i < length; i++){
+        while(!uart_is_readable(uart)){
+            if(time_us_32() - start > timeout_ms * 1000){
+                return false;   // タイムアウト
+            }
+        }
+        data[i] = uart_getc(uart);
+    }
+
+    return true;    // 正常受信
 }

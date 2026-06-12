@@ -97,92 +97,94 @@ int UseCamera() {
             uint8_t y_half = buffer[i * 3 + 2];   // 2で割られたY座標
             cameraInformation[i].x = x_half * 2;              // 0~160を0~320に変換
             cameraInformation[i].y = y_half * 2;
-            if(serialWatch == "cam1"){
-                if(isUseDisplay){
-                    if(realI < 4){
-                        if (cameraInformation[i].obj_id == 3) {
-                            snprintf(displayBuffer,displayBufferSize,"Red X%d Y%d",cameraInformation[i].x,cameraInformation[i].y);
-                        } else if (cameraInformation[i].obj_id == 4) {
-                            snprintf(displayBuffer,displayBufferSize,"Blu X%d Y%d",cameraInformation[i].x,cameraInformation[i].y);
-                        } else if (cameraInformation[i].obj_id == 5) {
-                            snprintf(displayBuffer,displayBufferSize,"CaV X%d Y%d",cameraInformation[i].x,cameraInformation[i].y);
-                        } else if (cameraInformation[i].obj_id == 6) {
-                            snprintf(displayBuffer,displayBufferSize,"CaH X%d Y%d",cameraInformation[i].x,cameraInformation[i].y);
-                        } else {
-                            snprintf(displayBuffer,displayBufferSize,"??? X%d Y%d",cameraInformation[i].x,cameraInformation[i].y);
+            if(3 <= cameraInformation[i].obj_id && cameraInformation[i].obj_id <= 6){
+                if(serialWatch == "cam1"){
+                    if(isUseDisplay){
+                        if(realI < 4){
+                            if (cameraInformation[i].obj_id == 3) {
+                                snprintf(displayBuffer,displayBufferSize,"Red X%d Y%d",cameraInformation[i].x,cameraInformation[i].y);
+                            } else if (cameraInformation[i].obj_id == 4) {
+                                snprintf(displayBuffer,displayBufferSize,"Blu X%d Y%d",cameraInformation[i].x,cameraInformation[i].y);
+                            } else if (cameraInformation[i].obj_id == 5) {
+                                snprintf(displayBuffer,displayBufferSize,"CaV X%d Y%d",cameraInformation[i].x,cameraInformation[i].y);
+                            } else if (cameraInformation[i].obj_id == 6) {
+                                snprintf(displayBuffer,displayBufferSize,"CaH X%d Y%d",cameraInformation[i].x,cameraInformation[i].y);
+                            } else {
+                                snprintf(displayBuffer,displayBufferSize,"??? X%d Y%d",cameraInformation[i].x,cameraInformation[i].y);
+                            }
+                            WriteTextOnDisplay(5,30+realI*10,displayBuffer,8,false,false);  
+                        }else if(realI < 8){
+                            if (cameraInformation[i].obj_id == 3) {
+                                snprintf(displayBuffer,displayBufferSize,"Red");
+                            } else if (cameraInformation[i].obj_id == 4) {
+                                snprintf(displayBuffer,displayBufferSize,"Blu");
+                            } else if (cameraInformation[i].obj_id == 5) {
+                                snprintf(displayBuffer,displayBufferSize,"CaV");
+                            } else if (cameraInformation[i].obj_id == 6) {
+                                snprintf(displayBuffer,displayBufferSize,"CaH");
+                            } else {
+                                snprintf(displayBuffer,displayBufferSize,"???");
+                            }
+                            WriteTextOnDisplay(100,-10+realI*10,displayBuffer,8,false,false);
                         }
-                        WriteTextOnDisplay(5,30+realI*10,displayBuffer,8,false,false);  
-                    }else if(realI < 8){
+                    }else{
                         if (cameraInformation[i].obj_id == 3) {
-                            snprintf(displayBuffer,displayBufferSize,"Red");
+                            printf("  [赤] ID:%d X:%d Y:%d\n", cameraInformation[i].obj_id, cameraInformation[i].x,cameraInformation[i].y);
                         } else if (cameraInformation[i].obj_id == 4) {
-                            snprintf(displayBuffer,displayBufferSize,"Blu");
+                            printf("  [青] ID:%d, X:%d Y:%d\n", cameraInformation[i].obj_id, cameraInformation[i].x,cameraInformation[i].y);
                         } else if (cameraInformation[i].obj_id == 5) {
-                            snprintf(displayBuffer,displayBufferSize,"CaV");
+                            printf("  [縦缶] ID:%d, X:%d Y:%d\n", cameraInformation[i].obj_id, cameraInformation[i].x,cameraInformation[i].y);
                         } else if (cameraInformation[i].obj_id == 6) {
-                            snprintf(displayBuffer,displayBufferSize,"CaH");
+                            printf("  [横缶] ID:%d, X:%d Y:%d\n", cameraInformation[i].obj_id, cameraInformation[i].x,cameraInformation[i].y);
                         } else {
-                            snprintf(displayBuffer,displayBufferSize,"???");
+                            printf("  [Unknown] ID:%d, X:%d Y:%d\n", cameraInformation[i].obj_id, cameraInformation[i].x,cameraInformation[i].y);
                         }
-                        WriteTextOnDisplay(100,-10+realI*10,displayBuffer,8,false,false);
                     }
-                }else{
-                    if (cameraInformation[i].obj_id == 3) {
-                        printf("  [赤] ID:%d X:%d Y:%d\n", cameraInformation[i].obj_id, cameraInformation[i].x,cameraInformation[i].y);
-                    } else if (cameraInformation[i].obj_id == 4) {
-                        printf("  [青] ID:%d, X:%d Y:%d\n", cameraInformation[i].obj_id, cameraInformation[i].x,cameraInformation[i].y);
-                    } else if (cameraInformation[i].obj_id == 5) {
-                        printf("  [縦缶] ID:%d, X:%d Y:%d\n", cameraInformation[i].obj_id, cameraInformation[i].x,cameraInformation[i].y);
-                    } else if (cameraInformation[i].obj_id == 6) {
-                        printf("  [横缶] ID:%d, X:%d Y:%d\n", cameraInformation[i].obj_id, cameraInformation[i].x,cameraInformation[i].y);
-                    } else {
-                        printf("  [Unknown] ID:%d, X:%d Y:%d\n", cameraInformation[i].obj_id, cameraInformation[i].x,cameraInformation[i].y);
+                }else if(serialWatch == "cam2"){
+                    if(isUseDisplay){
+                        if(realI < 4){
+                            if (cameraInformation[i].obj_id == 3) {
+                                snprintf(displayBuffer,displayBufferSize,"Red");
+                            } else if (cameraInformation[i].obj_id == 4) {
+                                snprintf(displayBuffer,displayBufferSize,"Blu");
+                            } else if (cameraInformation[i].obj_id == 5) {
+                                snprintf(displayBuffer,displayBufferSize,"CaV");
+                            } else if (cameraInformation[i].obj_id == 6) {
+                                snprintf(displayBuffer,displayBufferSize,"CaH");
+                            } else {
+                                snprintf(displayBuffer,displayBufferSize,"???");
+                            }
+                            WriteTextOnDisplay(5,30+realI*10,displayBuffer,8,false,false);
+                        }else if(realI < 8){
+                            if (cameraInformation[i].obj_id == 3) {
+                                snprintf(displayBuffer,displayBufferSize,"Red X%d Y%d",cameraInformation[i].x,cameraInformation[i].y);
+                            } else if (cameraInformation[i].obj_id == 4) {
+                                snprintf(displayBuffer,displayBufferSize,"Blu X%d Y%d",cameraInformation[i].x,cameraInformation[i].y);
+                            } else if (cameraInformation[i].obj_id == 5) {
+                                snprintf(displayBuffer,displayBufferSize,"CaV X%d Y%d",cameraInformation[i].x,cameraInformation[i].y);
+                            } else if (cameraInformation[i].obj_id == 6) {
+                                snprintf(displayBuffer,displayBufferSize,"CaH X%d Y%d",cameraInformation[i].x,cameraInformation[i].y);
+                            } else {
+                                snprintf(displayBuffer,displayBufferSize,"??? X%d Y%d",cameraInformation[i].x,cameraInformation[i].y);
+                            }
+                            WriteTextOnDisplay(35,-10+realI*10,displayBuffer,8,false,false);  
+                        }
+                    }else{
+                        if (cameraInformation[i].obj_id == 3) {
+                            printf("  [赤] ID:%d X:%d Y:%d\n", cameraInformation[i].obj_id, cameraInformation[i].x,cameraInformation[i].y);
+                        } else if (cameraInformation[i].obj_id == 4) {
+                            printf("  [青] ID:%d, X:%d Y:%d\n", cameraInformation[i].obj_id, cameraInformation[i].x,cameraInformation[i].y);
+                        } else if (cameraInformation[i].obj_id == 5) {
+                            printf("  [縦缶] ID:%d, X:%d Y:%d\n", cameraInformation[i].obj_id, cameraInformation[i].x,cameraInformation[i].y);
+                        } else if (cameraInformation[i].obj_id == 6) {
+                            printf("  [横缶] ID:%d, X:%d Y:%d\n", cameraInformation[i].obj_id, cameraInformation[i].x,cameraInformation[i].y);
+                        } else {
+                            printf("  [Unknown] ID:%d, X:%d Y:%d\n", cameraInformation[i].obj_id, cameraInformation[i].x,cameraInformation[i].y);
+                        }
                     }
                 }
-            }else if(serialWatch == "cam2"){
-                if(isUseDisplay){
-                    if(realI < 4){
-                        if (cameraInformation[i].obj_id == 3) {
-                            snprintf(displayBuffer,displayBufferSize,"Red");
-                        } else if (cameraInformation[i].obj_id == 4) {
-                            snprintf(displayBuffer,displayBufferSize,"Blu");
-                        } else if (cameraInformation[i].obj_id == 5) {
-                            snprintf(displayBuffer,displayBufferSize,"CaV");
-                        } else if (cameraInformation[i].obj_id == 6) {
-                            snprintf(displayBuffer,displayBufferSize,"CaH");
-                        } else {
-                            snprintf(displayBuffer,displayBufferSize,"???");
-                        }
-                        WriteTextOnDisplay(5,30+realI*10,displayBuffer,8,false,false);
-                    }else if(realI < 8){
-                        if (cameraInformation[i].obj_id == 3) {
-                            snprintf(displayBuffer,displayBufferSize,"Red X%d Y%d",cameraInformation[i].x,cameraInformation[i].y);
-                        } else if (cameraInformation[i].obj_id == 4) {
-                            snprintf(displayBuffer,displayBufferSize,"Blu X%d Y%d",cameraInformation[i].x,cameraInformation[i].y);
-                        } else if (cameraInformation[i].obj_id == 5) {
-                            snprintf(displayBuffer,displayBufferSize,"CaV X%d Y%d",cameraInformation[i].x,cameraInformation[i].y);
-                        } else if (cameraInformation[i].obj_id == 6) {
-                            snprintf(displayBuffer,displayBufferSize,"CaH X%d Y%d",cameraInformation[i].x,cameraInformation[i].y);
-                        } else {
-                            snprintf(displayBuffer,displayBufferSize,"??? X%d Y%d",cameraInformation[i].x,cameraInformation[i].y);
-                        }
-                        WriteTextOnDisplay(35,-10+realI*10,displayBuffer,8,false,false);  
-                    }
-                }else{
-                    if (cameraInformation[i].obj_id == 3) {
-                        printf("  [赤] ID:%d X:%d Y:%d\n", cameraInformation[i].obj_id, cameraInformation[i].x,cameraInformation[i].y);
-                    } else if (cameraInformation[i].obj_id == 4) {
-                        printf("  [青] ID:%d, X:%d Y:%d\n", cameraInformation[i].obj_id, cameraInformation[i].x,cameraInformation[i].y);
-                    } else if (cameraInformation[i].obj_id == 5) {
-                        printf("  [縦缶] ID:%d, X:%d Y:%d\n", cameraInformation[i].obj_id, cameraInformation[i].x,cameraInformation[i].y);
-                    } else if (cameraInformation[i].obj_id == 6) {
-                        printf("  [横缶] ID:%d, X:%d Y:%d\n", cameraInformation[i].obj_id, cameraInformation[i].x,cameraInformation[i].y);
-                    } else {
-                        printf("  [Unknown] ID:%d, X:%d Y:%d\n", cameraInformation[i].obj_id, cameraInformation[i].x,cameraInformation[i].y);
-                    }
-                }
+                realI++;
             }
-            if(3 <= cameraInformation[i].obj_id && cameraInformation[i].obj_id <= 6)realI++;
         }
         return num_objects;
     } else {
