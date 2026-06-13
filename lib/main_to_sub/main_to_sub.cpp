@@ -96,14 +96,6 @@ void SubCallBack(){
         }
         case 0x21:{
             //赤玉の排出(通常)
-            SetServoAngle(servo_left_basket_pin,140);
-            sleep_ms(500);
-            SetServoAngle(servo_left_basket_pin,120);
-            sleep_ms(500);
-            SetServoAngle(servo_left_basket_pin,100);
-            sleep_ms(500);
-            SetServoAngle(servo_left_basket_pin,80);
-            sleep_ms(500);
             SetServoAngle(servo_left_basket_pin,60);
             sleep_ms(2000);
             SetServoAngle(servo_left_basket_pin,160);
@@ -137,14 +129,6 @@ void SubCallBack(){
         }
         case 0x23:{
             //青玉の排出(通常)
-            SetServoAngle(servo_right_basket_pin,140);
-            sleep_ms(500);
-            SetServoAngle(servo_right_basket_pin,120);
-            sleep_ms(500);
-            SetServoAngle(servo_right_basket_pin,100);
-            sleep_ms(500);
-            SetServoAngle(servo_right_basket_pin,80);
-            sleep_ms(500);
             SetServoAngle(servo_right_basket_pin,60);
             sleep_ms(2000);
             SetServoAngle(servo_right_basket_pin,160);
@@ -193,13 +177,13 @@ void SetServoOffFromMain(unsigned int gpio){
 void TrashfromBasketFromMain(int object){
     if(object == 10){
         uart_write_blocking(main_to_sub_uart,(uint8_t[]){0x21},1);
-        sleep_ms(3150);
+        sleep_ms(2000);
     }else if(object == 11){
         uart_write_blocking(main_to_sub_uart,(uint8_t[]){0x22},1);
         sleep_ms(3150);
     }else if(object == 2){
         uart_write_blocking(main_to_sub_uart,(uint8_t[]){0x23},1);
-        sleep_ms(3150);
+        sleep_ms(2000);
     }else if(object == 3){
         SetServoAngleFromMain(servo_arm_up_and_down_pin,90);
         uart_write_blocking(main_to_sub_uart,(uint8_t[]){0x24},1);

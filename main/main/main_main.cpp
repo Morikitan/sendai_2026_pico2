@@ -15,6 +15,8 @@
 #include "hardware/i2c.h"
 #include <stdio.h>
 
+bool isClosed = false;
+
 int main(){
     stdio_init_all();
     sleep_ms(1000);
@@ -34,14 +36,23 @@ int main(){
     SetServoAngleFromMain(servo_left_claw_pin,40);
     SetServoAngleFromMain(servo_right_claw_pin,140);
     // SetSuctionMotorSpeedFromMain(75);//30%
+    isClosed = true;
     UseColorLED(0,255,0);
     gpio_put(buzzer_pin,true);
     sleep_ms(500);
     gpio_put(buzzer_pin,false);
     while(true){
         if(gpio_get(tactile_switch_pin1) == true){
-            task = 8;
-            CatchBall(true);
+            if(isClosed){
+                SetServoAngleFromMain(servo_left_claw_pin,140);
+                SetServoAngleFromMain(servo_right_claw_pin,40);
+                isClosed = false;
+            }else{
+                SetServoAngleFromMain(servo_left_claw_pin,40);
+                SetServoAngleFromMain(servo_right_claw_pin,140);
+                isClosed = true;
+            }
+            sleep_ms(1000);
         }else if(gpio_get(tactile_switch_pin2) == true){
             //最初に自由ボールを入れる場合の処理
             allFirstTime = time_us_32();
