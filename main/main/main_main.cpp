@@ -43,21 +43,24 @@ int main(){
     gpio_put(buzzer_pin,false);
     while(true){
         if(gpio_get(tactile_switch_pin1) == true){
-            if(isClosed){
-                SetServoAngleFromMain(servo_left_claw_pin,140);
-                SetServoAngleFromMain(servo_right_claw_pin,40);
-                isClosed = false;
-            }else{
-                SetServoAngleFromMain(servo_left_claw_pin,40);
-                SetServoAngleFromMain(servo_right_claw_pin,140);
-                isClosed = true;
+            allFirstTime = time_us_32();
+            SetStepperON();
+            isFreeBall = false;
+            startTime = 180;
+            sleep_ms(500);
+            while(true){
+                PrintDisplayMode();
+                MainMove();
+                SendBufferToDisplay();
             }
-            sleep_ms(1000);
         }else if(gpio_get(tactile_switch_pin2) == true){
             //最初に自由ボールを入れる場合の処理
             allFirstTime = time_us_32();
             SetStepperON();
-            isFreeBall = true;
+            // isFreeBall = true;
+            isFreeBall = false;
+            isYosen = true;
+            startTime = 0;
             sleep_ms(500);
             while(true){
                 PrintDisplayMode();
@@ -68,6 +71,7 @@ int main(){
             allFirstTime = time_us_32();
             SetStepperON();
             isFreeBall = false;
+            startTime = 0;
             sleep_ms(500);
             while(true){
                 PrintDisplayMode();

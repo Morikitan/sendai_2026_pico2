@@ -163,3 +163,4 @@ extern int allRedBallNumber;//6個
 extern int allBlueBallNumber;//2個
 extern int allCanNumber;//縦缶3個,横缶1個
 extern bool isFreeBall;
+extern int startTime;

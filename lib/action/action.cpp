@@ -19,7 +19,7 @@
 //共有変数
 int task;
 uint32_t allFirstTime;
-bool isYosen = true; //予選か
+bool isYosen = false; //予選か
 bool isFreeBall = false; //自由ボールを先に捨てるか
 
 //非共有変数
@@ -38,6 +38,7 @@ int unWatchTime = 0;//対象を見ていない時間の計測用,壁あての時
 uint32_t pPreTime = 0;
 float pLeft = 0.0;//ライントレースP制御の左タイヤ
 float pRight = 0.0;//ライントレースP制御の右タイヤ
+int startTime;
 
 //対象の数とか
 int redBallNumber = 0;
@@ -430,7 +431,7 @@ void MainMove(){
         int preObjectNumber = objectNumber;
         int objID = 555;
         isCatchHorizonCan = false;
-        while((objectTask == 1 || objectTask == 2 || (objectTask == 3 && (redBallNumber < 3 || allRedBallNumber == 6) && (canNumber < 2 || allCanNumber == 4))) && objectNumber < 12 && (time_us_32() - allFirstTime) / 1000000 < 510 && !isCatchHorizonCan){
+        while((objectTask == 1 || objectTask == 2 || (objectTask == 3 && (redBallNumber < 3 || allRedBallNumber == 6) && (canNumber < 2 || allCanNumber == 4))) && objectNumber < 12 && (time_us_32() - allFirstTime) / 1000000 < (510 - startTime) && !isCatchHorizonCan){
             // uint8_t cmd = 0x11;
             // uart_write_blocking(camera_uart,&cmd,1);
             sleep_ms(1);
@@ -467,7 +468,7 @@ void MainMove(){
             UseColorLED(0,0,0);
             BackToLine();
             RotationToAngle(180);
-            DaikeiKasokuLoop(1000,-200,180);
+            DaikeiKasokuLoop(1250,-200,180);
         }
         lineAngle = 180;
         preLineAngle = 180;
@@ -500,7 +501,15 @@ void MainMove(){
         firstTime = time_us_32();
         while(!gpio_get(touch_sensor_back_left_pin) || !gpio_get(touch_sensor_back_right_pin)){
             PrintDisplayMode();
-            DaikeiKasoku(-400,999);
+            if(gpio_get(touch_sensor_back_left_pin) || gpio_get(touch_sensor_back_right_pin)){
+                DaikeiKasoku(-50,999);
+                if((time_us_32() - unWatchTime) / 1000 > 1000){
+                    break;
+                }  
+            }else{
+                DaikeiKasoku(-400,999);
+                unWatchTime = time_us_32(); //関係ない変数
+            }
             SendBufferToDisplay();
         }
         MainMotorState(0,0);
@@ -557,7 +566,7 @@ void MainMove(){
             lastLineTime = time_us_32() / 1000;
             pLeft = 0;pRight = 0;
         }
-        if(canNumber == 0 && !isCatchHorizonCan && redBallNumber == 0 && (time_us_32() - allFirstTime) / 1000000 < 480){
+        if(canNumber == 0 && !isCatchHorizonCan && redBallNumber == 0 && (time_us_32() - allFirstTime) / 1000000 < (480 - startTime)){
             //すぐに戻る
             preLineAngle = 90;
             lineAngle = 90;
@@ -607,7 +616,7 @@ void MainMove(){
                 lastLineTime = time_us_32() / 1000;
                 pLeft = 0;pRight = 0;
             }
-            if(redBallNumber == 0 && (time_us_32() - allFirstTime) / 1000000 < 480){
+            if(redBallNumber == 0 && (time_us_32() - allFirstTime) / 1000000 < (480 - startTime)){
                 //すぐに戻る
                 preLineAngle = 0;
                 lineAngle = 0;
@@ -645,7 +654,7 @@ void MainMove(){
                     TrashfromBasket(1);
                 }
                 RotationToAngle(0);
-                if(objectNumber < 12 && (time_us_32() - allFirstTime) / 1000000 < 480){
+                if(objectNumber < 12 && (time_us_32() - allFirstTime) / 1000000 < (480 - startTime)){
                     //すぐに戻る
                     pLeft = 0;pRight = 0;
                     preLineAngle = 0;
@@ -986,7 +995,7 @@ void CatchBall(bool isSuction){
         SetServoAngleFromMain(servo_left_claw_pin,160);
         SetServoAngleFromMain(servo_right_claw_pin,20);
         sleep_ms(750);
-        DaikeiKasokuLoop(250,100,999);
+        DaikeiKasokuLoop(300,100,999);
         SetServoAngleFromMain(servo_arm_up_and_down_pin,168);
         sleep_ms(500);
     }else{
@@ -1083,7 +1092,7 @@ void CatchBall(bool isSuction){
             //タイムアウト
             SetSuctionMotorSpeedFromMain(0);
             sleep_ms(500);
-            SetServoAngleFromMain(servo_arm_up_and_down_pin,165);
+            SetServoAngleFromMain(servo_arm_up_and_down_pin,140);
             sleep_ms(1500);
             SetServoAngleFromMain(servo_arm_up_and_down_pin,50);
             return;
@@ -1133,7 +1142,7 @@ void CatchCan(){
         if(d == 999 && (preX > centerX + 5 || preX < centerX - 5)){
             MainMotorState(50,50);
             prenow = now;
-            GetDistanceFromSub();
+            // GetDistanceFromSub();
             if(cameraInformation[number].y > canDistance){
                 tofTime = time_us_32();
             }
@@ -1142,6 +1151,7 @@ void CatchCan(){
                 isBreak = true;
                 break;
             }
+            sleep_ms(1);
             continue;
         }else{
             preX = cameraInformation[number].x;
@@ -1162,7 +1172,8 @@ void CatchCan(){
         }else{
             MainMotorState(s,s);
         }
-        GetDistanceFromSub();
+        // GetDistanceFromSub();
+        distance = 350;
         if(distance == 0xFFFF){
             MainMotorState(0,0);
         }else{
@@ -1191,8 +1202,8 @@ void CatchCan(){
     GetGyroAngleFromSub();
     if(cameraInformation[number].obj_id == 5){
         //中心線より左側
-        SetServoAngleFromMain(servo_left_claw_pin,110);
-        SetServoAngleFromMain(servo_right_claw_pin,70);
+        SetServoAngleFromMain(servo_left_claw_pin,100);
+        SetServoAngleFromMain(servo_right_claw_pin,80);
     }else{
         SetServoAngleFromMain(servo_left_claw_pin,140);
         SetServoAngleFromMain(servo_right_claw_pin,40);
@@ -1204,14 +1215,14 @@ void CatchCan(){
     sleep_ms(250);
     //少し前進する
     
-    if(angleX < 157 || angleX > 203){
-        DaikeiKasokuLoop(1650,100,999); //1250 * 100
+    if((angleX < 157 || angleX > 203) && task < 7){
+        DaikeiKasokuLoop(1500,100,999); //1250 * 100
         SetSuctionMotorSpeedFromMain(150);
         sleep_ms(1000);
         DaikeiKasokuLoop(900,-100,999); //1250 * 100
         SetSuctionMotorSpeedFromMain(0);
         sleep_ms(1000);
-        catchObjectDistance += 750 * 100 * sin((angleX - 90) / 180.0 * 3.1416);
+        catchObjectDistance += 600 * 100 * sin((angleX - 90) / 180.0 * 3.1416);
     }else if(task < 7){
         catchObjectDistance += 1650 * 100 * sin((angleX - 90) / 180.0 * 3.1416);
         DaikeiKasokuLoop(1750,100,999); //1250 * 100
@@ -1398,9 +1409,9 @@ void CatchPetBottle(){
         if(distance == 0xFFFF){
             MainMotorState(0,0);
             pLeft = 0;pRight = 0;
-        }else if(distance < 410){
+        }else if(distance < 400){
             deltaTime += time_us_32() / 1000 - preTime;
-        }else if(distance > 440){
+        }else if(distance > 430){
             deltaTime = 0;
         }
         preTime = time_us_32() / 1000;
@@ -1432,7 +1443,7 @@ void CatchPetBottle(){
     sleep_ms(1000);
     firstTime = time_us_32();
     MainMotorState(0,0);
-    while((time_us_32() - firstTime) / 1000 < 2500){
+    while((time_us_32() - firstTime) / 1000 < 2450){
         GetGyroAngleFromSub();
         if((time_us_32() - firstTime) / 15000 > 200){
             MainMotorState(200 - (int)((angleX-180.0) * 10),200 + (int)((angleX-180.0) * 10));
@@ -1711,7 +1722,7 @@ void PassTheSpace(){
 void PMove(int left,int right){
     if(time_us_32() - pPreTime > 500000){
         //0.5s以上離れているときは初めて使った時と判定してpPreTimeをリセット
-        pPreTime = time_us_32();
+        pPreTime = time_us_32() - 500000;
     }
     uint32_t now = time_us_32();
     float k;
@@ -2034,6 +2045,9 @@ void TrashfromBasket(int object){
         circleLineAngle = GetCircleLineVector(20,true,true);
         DaikeiKasoku(-300,90);
         SendBufferToDisplay();
+        if(((time_us_32() - firstTime) / 1000 > 6000 && object == 2) || ((time_us_32() - firstTime) / 1000 > 3000 && (object == 1 || object == 3))){
+            break;
+        }
     }
     MainMotorState(0,0);
     if(object == 1){

@@ -96,7 +96,7 @@ void SubCallBack(){
         }
         case 0x21:{
             //赤玉の排出(通常)
-            SetServoAngle(servo_left_basket_pin,60);
+            SetServoAngle(servo_left_basket_pin,75);
             sleep_ms(2000);
             SetServoAngle(servo_left_basket_pin,160);
             sleep_ms(2000);
@@ -105,20 +105,8 @@ void SubCallBack(){
         }
         case 0x22:{
             //赤玉の排出(同時に２つ)
-            SetServoAngle(servo_left_basket_pin,140);
-            SetServoAngle(servo_right_basket_pin,140);
-            sleep_ms(500);
-            SetServoAngle(servo_left_basket_pin,120);
-            SetServoAngle(servo_right_basket_pin,120);
-            sleep_ms(500);
-            SetServoAngle(servo_left_basket_pin,100);
-            SetServoAngle(servo_right_basket_pin,100);
-            sleep_ms(500);
-            SetServoAngle(servo_left_basket_pin,80);
-            SetServoAngle(servo_right_basket_pin,80);
-            sleep_ms(500);
-            SetServoAngle(servo_left_basket_pin,60);
-            SetServoAngle(servo_right_basket_pin,60);
+            SetServoAngle(servo_left_basket_pin,75);
+            SetServoAngle(servo_right_basket_pin,75);
             sleep_ms(2000);
             SetServoAngle(servo_left_basket_pin,160);
             SetServoAngle(servo_right_basket_pin,160);
@@ -129,7 +117,7 @@ void SubCallBack(){
         }
         case 0x23:{
             //青玉の排出(通常)
-            SetServoAngle(servo_right_basket_pin,60);
+            SetServoAngle(servo_right_basket_pin,75);
             sleep_ms(2000);
             SetServoAngle(servo_right_basket_pin,160);
             sleep_ms(2000);
@@ -138,7 +126,7 @@ void SubCallBack(){
         }
         case 0x24:{
             //黄缶の排出(通常)
-            SetServoAngle(servo_center_basket_pin,60);
+            SetServoAngle(servo_center_basket_pin,75);
             sleep_ms(3000);
             SetServoAngle(servo_center_basket_pin,160);
             sleep_ms(2000);
